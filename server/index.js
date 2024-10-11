@@ -14,8 +14,8 @@ app.use(express.json()); // Para procesar datos JSON en las solicitudes
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '',  // DEBE CAMBIAR LA CONTRASEÑA
-  database: '',
+  password: 'YOUNGE8H2S1re',  // DEBE CAMBIAR LA CONTRASEÑA
+  database: 'tuberculosis',
 });
 
 // Conectar a la base de datos
@@ -127,3 +127,19 @@ app.get('/api/medicos', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+
+/**
+ * IMPORTANTE! INSTALAR express
+ * npm install express
+ */
+
+/**
+ * IMPORTANTE! INSTALAR mysql2
+ * npm install mysql2
+ */
+
+/**
+ * IMPORTANTE! INSTALAR cors
+ * npm install cors
+ */

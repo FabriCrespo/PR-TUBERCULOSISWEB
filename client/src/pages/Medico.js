@@ -22,7 +22,7 @@ const Medico = () => {
                 <table className="table-container">
                     <thead >
                         <tr>
-                            <th className="table-header" style={{display: ""}}>Nro.</th>
+                            <th className="table-header" style={{display: "none"}}>Nro.</th>
                             <th className="table-header">Nombre Completo</th>
                             <th className="table-header">CI</th>
                             <th className="table-header">Correo</th>

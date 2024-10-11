@@ -19,7 +19,7 @@ const Home = () => {
     <Layout>
       <div className='hero'>
         <div className='container'>
-          <h1>SEDES Cochabamba</h1>
+          <h1>PROGRAMA TUBERCULOSIS - Cochabamba</h1>
           <p>Servicio Departamental de Salud Cochabamba SEDES - Programa de TUBERCULOSIS</p>
         </div>
       </div>

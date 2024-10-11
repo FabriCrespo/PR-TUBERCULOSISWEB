@@ -20,6 +20,7 @@ const Footer = () => {
           </div>
         </div>
 
+        { /*
         <div className='footer-share'>
           <h2 className='footer-share-h'>SÍGUENOS EN</h2>
           <div className='footer-share-list sns'>
@@ -53,6 +54,7 @@ const Footer = () => {
             </a>
           </div>
         </div>
+        */ }
         
         <p className='copyright'>&copyright; Since 1945 SEDES, All Rights Reserved.</p>
 

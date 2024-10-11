@@ -11,3 +11,7 @@ root.render(
   </React.StrictMode>
 );
 
+/**
+ * IMPORTANTE! EJECUTAR EL SIGIENTE COMANDO EN EL DIRECTORIO ACTUAL (client)
+ * npm install
+ */
