@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register'; 
 import Paciente from './pages/Paciente';
 import Medico from './pages/Medico';
+import EditPaciente from './pages/EditPaciente';  
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path='/register' element={<Register />} />
         <Route path='/pacientes' element={<Paciente />} />
         <Route path='/medicos' element={<Medico />} />
+        <Route path='/editPaciente/:idPersona' element={<EditPaciente />}/>
       </Routes>
     </Router>
   );

@@ -1,129 +1,95 @@
-// server/index.js
 const express = require('express');
 const mysql = require('mysql2');
-const cors = require('cors');  // Importar el módulo cors
+const cors = require('cors');
 
 const app = express();
 const PORT = 3001;
 
 // Middleware
-app.use(cors()); // Permitir solicitudes desde otros dominios
-app.use(express.json()); // Para procesar datos JSON en las solicitudes
+app.use(cors());
+app.use(express.json());
 
 // Configurar la conexión a la base de datos MySQL
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',  // DEBE CAMBIAR LA CONTRASEÑA
-  database: '',
+    host: 'localhost',
+    user: 'root',
+    password: 'Luxxo.2004', // Asegúrate de cambiar esto por tu contraseña real
+    database: 'tuberculosis',
+    port: 3306
 });
 
 // Conectar a la base de datos
-db.connect((err) => {
-  if (err) {
-    console.log('Error connecting to the database:', err);
-    return;
-  }
-  console.log('Connected to the MySQL database');
-});
-
-
-// Rutas
-app.get('/api/redsalud', (req, res) => {
-  const query = 'SELECT * FROM tuberculosis.redsalud;'; // Asegúrate de que 'foods' sea el nombre correcto de la tabla
-  db.query(query, (err, result) => {
+db.connect(err => {
     if (err) {
-      return res.status(500).send(err);
+        console.log('Error connecting to the database:', err);
+        return;
     }
-    res.json(result); // Devuelve los datos en formato JSON
-  });
+    console.log('Connected to the MySQL database');
 });
 
-
-/* ****************************************************** */
-/* ************************ LOGIN *********************** */
-/* ****************************************************** */
-// LOGIN O AUTENTICACION DE USUARIOS CON VERIFICACION DE CORREO Y CONTRASEÑA
-app.get('/api/login', (req, res) => {
-  const { correo, contrasenia } = req.query;
-  
-  if (!correo || !contrasenia) {
-    return res.status(400).json({ error: 'Correo y contraseña son obligatorios' });
-  }
-
-  const query = `SELECT *
-                 FROM persona
-                 WHERE estado = 1 AND (correo = ? AND contrasenia = ?);`;
-
-  db.query(query, [correo, contrasenia], (error, result) => {
-    if (error) {
-      return res.status(500).send(error);
-    }
-
-    if (result.length === 0) {
-      return res.status(401).json({ error: 'Credenciales incorrectas' });
-    }
-
-    res.json(result[0]);  // Envia el primer resultado de mi usuario
-  });
-});
-
-// RUTA PROTEGIDA SOLO PARA ADMINISTRADORES
-const verifyRole = (role) => {
-  return (req, res, next) => {
-    const { correo, contrasenia } = req.query;
-
-    const query = 'SELECT rol FROM persona WHERE correo = ? AND contrasenia = ?';
-    db.query(query, [correo, contrasenia], (error, result) => {
-      if (error || result.length ===0 || result[0].rol !== role) {
-        return res.status(403).json({ error: 'No autorizado' });
+// Ruta para obtener los datos de un paciente específico
+app.get('/api/getPaciente/:idPersona', (req, res) => {
+  const { idPersona } = req.params;
+  const query = 'SELECT * FROM persona WHERE idPersona = ? AND rol = "paciente"';
+  db.query(query, [idPersona], (err, result) => {
+      if (err) {
+          console.error('Error fetching paciente:', err);
+          return res.status(500).json({ error: 'Internal Server Error' });
       }
-      next();
-    });
-  };
-};
-
-app.get('/api/admin-data', verifyRole('administrador'), (req, res) => {
-  res.json({ message: 'Datos confidenciales del administrador' });
+      if (result.length === 0) {
+          return res.status(404).json({ error: 'Paciente no encontrado' });
+      }
+      res.json(result[0]);
+  });
 });
 
-
-/* ****************************************************** */
-/* ********************** PACIENTES ********************* */
-/* ****************************************************** */
-// PACIENTES 
+//
 app.get('/api/pacientes', (req, res) => {
-  const query = ` SELECT idPersona, CONCAT(primerNombre, ' ', IFNULL(segundoNombre,''), ' ', primerApellido, ' ', IFNULL(segundoApellido,'')) AS nombreCompleto, CI
-                  FROM persona
-                  WHERE rol = 'paciente';`;
-  db.query(query, (error, result) => {
-    if (error) {
-      return res.status(500).send(error);
-    }
-    res.json(result);
+  db.query('SELECT * FROM persona WHERE rol = "paciente"', (err, results) => {
+      if (err) {
+          console.error('Error fetching pacientes:', err);
+          res.status(500).send(err);
+          return;
+      }
+      res.json(results);
   });
 });
 
-
-/* ****************************************************** */
-/* ******************* PERSONAL MÉDICO ****************** */
-/* ****************************************************** */
-// PERSONAL MEDICO
-app.get('/api/medicos', (req, res) => {
-  const query = ` SELECT idPersona, CONCAT(primerNombre, ' ', IFNULL(segundoNombre,''), ' ', primerApellido, ' ', IFNULL(segundoApellido,'')) AS nombreCompleto, CI, correo, numeroCelular
-                  FROM persona
-                  WHERE rol = 'doctor';`;
-  db.query(query, (error, result) => {
-    if (error) {
-      return res.status(500).send(error);
-    }
-    res.json(result);
+// Ruta para actualizar un paciente
+// Ruta para actualizar un paciente
+app.put('/api/updatePaciente/:idPersona', (req, res) => {
+  const { idPersona } = req.params;
+  const { primerNomrbe, primerApellido, numeroCelular, CI, usuario, correo } = req.body;
+  console.log("Datos recibidos para actualizar:", req.body);
+  const query = 'UPDATE persona SET primerNomrbe = ?, primerApellido = ?, numeroCelular = ?, CI = ?, usuario = ?, correo = ? WHERE idPersona = ? AND rol = "paciente";';
+ 
+  db.query(query, [primerNomrbe, primerApellido, numeroCelular, CI, usuario, correo, idPersona], (err, result) => {
+      if (err) {
+          console.error('Error updating paciente:', err);
+          return res.status(500).json({ error: 'Error updating paciente', details: err });
+      }
+      console.log('Filas afectadas:', result.affectedRows); 
+      if (result.affectedRows === 0) {
+          return res.status(404).json({ error: 'Paciente no encontrado' });
+      }
+      res.json({ message: 'Paciente actualizado con éxito' });
   });
 });
 
+//
+app.get('/api/redsalud', (req, res) => {
+  const query = 'SELECT * FROM redSalud'; // Asegúrate de que 'redSalud' es el nombre correcto de tu tabla
+  db.query(query, (err, results) => {
+      if (err) {
+          console.error('Error fetching redes de salud:', err);
+          return res.status(500).send(err);
+      }
+      res.json(results);
+  });
+});
 
 
 // Iniciar el servidor
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
