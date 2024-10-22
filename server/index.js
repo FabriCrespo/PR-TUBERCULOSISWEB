@@ -14,7 +14,7 @@ app.use(express.json()); // Para procesar datos JSON en las solicitudes
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'YOUNGE8H2S1re',  // DEBE CAMBIAR LA CONTRASEÑA
+  password: '*************',  // DEBE CAMBIAR LA CONTRASEÑA
   database: 'tuberculosis',
 });
 
@@ -43,19 +43,25 @@ app.get('/api/redsalud', (req, res) => {
 /* ****************************************************** */
 /* ************************ LOGIN *********************** */
 /* ****************************************************** */
-// LOGIN O AUTENTICACION DE USUARIOS CON VERIFICACION DE CORREO Y CONTRASEÑA
+// LOGIN O AUTENTICACION DE USUARIOS CON VERIFICACION DE NOMBRE_USUARIO Y CONTRASEÑA
 app.get('/api/login', (req, res) => {
-  const { correo, contrasenia } = req.query;
+  const { usuario, contrasenia } = req.query;
   
-  if (!correo || !contrasenia) {
-    return res.status(400).json({ error: 'Correo y contraseña son obligatorios' });
+  if (!usuario || !contrasenia) {
+    return res.status(400).json({ error: 'Nombre de usuario y contraseña son obligatorios' });
   }
 
-  const query = `SELECT *
+  /*const query = `SELECT *
                  FROM persona
-                 WHERE estado = 1 AND (correo = ? AND contrasenia = ?);`;
+                 WHERE estado = 1 AND (correo = ? AND contrasenia = ?);`;*/
+  const query = ` SELECT PS.persona_idPersona AS Nro, PS.usuario AS Credencial, PS.contrasenia AS 'Clave Segura', PS.rol AS 'Nivel Acceso'
+                  FROM personalsalud PS
+                  WHERE PS.usuario = ? AND PS.contrasenia = ?;`;
+  /*const query = ` SELECT *
+                  FROM personalsalud
+                  WHERE usuario = ? AND contrasenia = ?;`;*/
 
-  db.query(query, [correo, contrasenia], (error, result) => {
+  db.query(query, [usuario, contrasenia], (error, result) => {
     if (error) {
       return res.status(500).send(error);
     }
@@ -64,7 +70,7 @@ app.get('/api/login', (req, res) => {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
-    res.json(result[0]);  // Envia el primer resultado de mi usuario
+    res.json(result[0]);  // ENVIA EL PRIMER USUARIO ENCONTRADO
   });
 });
 

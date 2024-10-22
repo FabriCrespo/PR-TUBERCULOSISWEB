@@ -19,7 +19,8 @@ const Login = () => {
         const c_contrasenia = contrasenia.replace(/"/g, '');
 
         //fetch(`http://localhost:3001/api/login?correo=${'admin@gmail.com'}&contrasenia=${'admin123'}`)
-        fetch(`http://localhost:3001/api/login?correo=${encodeURIComponent(c_correo)}&contrasenia=${encodeURIComponent(c_contrasenia)}`)
+        //fetch(`http://localhost:3001/api/login?usuario=doc1&contrasenia=doc1`)
+        fetch(`http://localhost:3001/api/login?usuario=${encodeURIComponent(c_correo)}&contrasenia=${encodeURIComponent(c_contrasenia)}`)
 
             .then((response) => response.json())
             .then((data) => {
@@ -27,12 +28,13 @@ const Login = () => {
                     const user = data;   // Acceder al primer usuario
                     
                     // GUARDAMOS EL ROL EN localStorage
-                    localStorage.setItem('userRole', user.rol);
+                    //localStorage.setItem('userRole', user.rol);
+                    localStorage.setItem('userRole', user['Nivel Acceso']);
                     
                     // REDIRIGIMOS SEGUN EL ROL DEL USUARIO
-                    if (user.rol === 'administrador') {
+                    if (user['Nivel Acceso'] === 'Administrador') {
                         navigate('./../medicos');
-                    } else if (user.rol === 'doctor') {
+                    } else if (user['Nivel Acceso'] === 'Doctor') {
                         navigate('/../pacientes');
                     }
                 } else {
