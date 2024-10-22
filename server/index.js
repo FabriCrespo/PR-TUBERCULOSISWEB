@@ -116,9 +116,10 @@ app.get('/api/pacientes', (req, res) => {
 /* ****************************************************** */
 // PERSONAL MEDICO
 app.get('/api/medicos', (req, res) => {
-  const query = ` SELECT idPersona, CONCAT(primerNombre, ' ', IFNULL(segundoNombre,''), ' ', primerApellido, ' ', IFNULL(segundoApellido,'')) AS nombreCompleto, CI, correo, numeroCelular
-                  FROM persona
-                  WHERE rol = 'doctor';`;
+  const query = ` SELECT P.idPersona AS Nro, P.nombres AS Nombres, P.primerApellido AS 'Primer Apellido', COALESCE(NULLIF(P.segundoApellido, ''), 'N/A') AS 'Segundo Apellido', P.numeroCelular AS 'Número Celular', IFNULL(P.fechaNacimiento, 'N/A') AS 'Fecha Nacimiento', IFNULL(P.sexo, 'N/A') AS Sexo, IFNULL(P.direccion, 'N/A') AS Dirección, P.CI AS Documento, P.EstablecimientoSalud_idEstablecimientoSalud AS 'Establecimiento de Salud'
+                  FROM persona P
+                  INNER JOIN personalsalud PS ON PS.persona_idPersona = p.idPersona
+                  WHERE P.estado = 1 AND PS.rol = 'Doctor';`;
   db.query(query, (error, result) => {
     if (error) {
       return res.status(500).send(error);
