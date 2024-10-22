@@ -13,7 +13,7 @@ const Signin = ({ correo, setCorreo, contrasenia, setContrasenia, handleLogin })
 
                     <form onSubmit={handleLogin}>
                         <div className="input-field">
-                            <input type="email" className="input" placeholder="Ingrese el correo electrónico" value={correo} onChange={(e) => setCorreo(e.target.value) } required></input>
+                            <input type="text" className="input" placeholder="Ingrese el nombre de usuario" value={correo} onChange={(e) => setCorreo(e.target.value) } required></input>
                         </div>
                         <div className="input-field">
                             <input type="password" className="input" placeholder="Ingrese la contraseña" value={contrasenia} onChange={(e) => setContrasenia(e.target.value)} required></input>
