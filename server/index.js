@@ -99,9 +99,9 @@ app.get('/api/admin-data', verifyRole('administrador'), (req, res) => {
 /* ****************************************************** */
 // PACIENTES 
 app.get('/api/pacientes', (req, res) => {
-  const query = ` SELECT idPersona, CONCAT(primerNombre, ' ', IFNULL(segundoNombre,''), ' ', primerApellido, ' ', IFNULL(segundoApellido,'')) AS nombreCompleto, CI
-                  FROM persona
-                  WHERE rol = 'paciente';`;
+  const query = ` SELECT P.idPersona AS Nro, P.nombres AS Nombres, P.primerApellido AS 'Primer Apellido', COALESCE(NULLIF(P.segundoApellido, ''), 'N/A') AS 'Segundo Apellido', P.numeroCelular AS 'Número Celular', IFNULL(P.fechaNacimiento, 'N/A') AS 'Fecha Nacimiento', IFNULL(P.sexo, 'N/A') AS Sexo, IFNULL(P.direccion, 'N/A') AS Dirección, P.CI AS Documento, P.EstablecimientoSalud_idEstablecimientoSalud AS 'Establecimiento Salud'
+                  FROM persona P
+                  WHERE estado = 1;`;
   db.query(query, (error, result) => {
     if (error) {
       return res.status(500).send(error);
