@@ -30,7 +30,7 @@ db.connect(err => {
 // Ruta para obtener los datos de un paciente específico
 app.get('/api/getPaciente/:idPersona', (req, res) => {
   const { idPersona } = req.params;
-  const query = 'SELECT * FROM persona WHERE idPersona = ? AND rol = "paciente"';
+  const query = 'SELECT * FROM persona WHERE idPersona = ?';
   db.query(query, [idPersona], (err, result) => {
       if (err) {
           console.error('Error fetching paciente:', err);
@@ -45,7 +45,7 @@ app.get('/api/getPaciente/:idPersona', (req, res) => {
 
 //
 app.get('/api/pacientes', (req, res) => {
-  db.query('SELECT * FROM persona WHERE rol = "paciente"', (err, results) => {
+  db.query('SELECT * FROM persona WHERE estado=1', (err, results) => {
       if (err) {
           console.error('Error fetching pacientes:', err);
           res.status(500).send(err);
@@ -59,11 +59,11 @@ app.get('/api/pacientes', (req, res) => {
 // Ruta para actualizar un paciente
 app.put('/api/updatePaciente/:idPersona', (req, res) => {
   const { idPersona } = req.params;
-  const { primerNomrbe, primerApellido, numeroCelular, CI, usuario, correo } = req.body;
+  const { nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento } = req.body;
   console.log("Datos recibidos para actualizar:", req.body);
-  const query = 'UPDATE persona SET primerNomrbe = ?, primerApellido = ?, numeroCelular = ?, CI = ?, usuario = ?, correo = ? WHERE idPersona = ? AND rol = "paciente";';
+  const query = 'UPDATE persona SET nombres = ?, primerApellido = ?, segundoApellido = ?, numeroCelular = ?, CI = ?, sexo = ?, fechaNacimiento = ? WHERE idPersona = ?;';
  
-  db.query(query, [primerNomrbe, primerApellido, numeroCelular, CI, usuario, correo, idPersona], (err, result) => {
+  db.query(query, [nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento, idPersona], (err, result) => {
       if (err) {
           console.error('Error updating paciente:', err);
           return res.status(500).json({ error: 'Error updating paciente', details: err });
@@ -92,4 +92,23 @@ app.get('/api/redsalud', (req, res) => {
 // Iniciar el servidor
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+});
+
+
+// Ruta para eliminar un paciente (cambiar estado a 0)
+app.put('/api/deletePaciente/:idPersona', (req, res) => {
+  const { idPersona } = req.params;
+  const query = 'UPDATE persona SET estado = 0 WHERE idPersona = ?';
+  
+  db.query(query, [idPersona], (err, result) => {
+      if (err) {
+          console.error('Error al eliminar el paciente:', err);
+          return res.status(500).json({ error: 'Error al eliminar el paciente', details: err });
+      }
+      console.log('Paciente eliminado:', result.affectedRows);
+      if (result.affectedRows === 0) {
+          return res.status(404).json({ error: 'Paciente no encontrado' });
+      }
+      res.json({ message: 'Paciente eliminado con éxito' });
+  });
 });
