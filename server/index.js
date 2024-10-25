@@ -58,23 +58,26 @@ app.get('/api/pacientes', (req, res) => {
 // Ruta para actualizar un paciente
 // Ruta para actualizar un paciente
 app.put('/api/updatePaciente/:idPersona', (req, res) => {
-  const { idPersona } = req.params;
-  const { nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento } = req.body;
-  console.log("Datos recibidos para actualizar:", req.body);
-  const query = 'UPDATE persona SET nombres = ?, primerApellido = ?, segundoApellido = ?, numeroCelular = ?, CI = ?, sexo = ?, fechaNacimiento = ? WHERE idPersona = ?;';
- 
-  db.query(query, [nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento, idPersona], (err, result) => {
-      if (err) {
-          console.error('Error updating paciente:', err);
-          return res.status(500).json({ error: 'Error updating paciente', details: err });
-      }
-      console.log('Filas afectadas:', result.affectedRows); 
-      if (result.affectedRows === 0) {
-          return res.status(404).json({ error: 'Paciente no encontrado' });
-      }
-      res.json({ message: 'Paciente actualizado con éxito' });
-  });
+    const { idPersona } = req.params;  // Make sure idPersona is passed correctly
+    const { nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento } = req.body;
+
+    // Format the date to YYYY-MM-DD
+    const formattedFechaNacimiento = fechaNacimiento.split('T')[0]; 
+
+    const query = 'UPDATE persona SET nombres = ?, primerApellido = ?, segundoApellido = ?, numeroCelular = ?, CI = ?, direccion = ?, sexo = ?, fechaNacimiento = ? WHERE idPersona = ?';
+    
+    db.query(query, [nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, formattedFechaNacimiento, idPersona], (err, result) => {
+        if (err) {
+            console.error('Error updating paciente:', err);
+            return res.status(500).json({ error: 'Error updating paciente', details: err });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Paciente no encontrado' });
+        }
+        res.json({ message: 'Paciente actualizado con éxito' });
+    });
 });
+
 
 //
 app.get('/api/redsalud', (req, res) => {
@@ -112,3 +115,43 @@ app.put('/api/deletePaciente/:idPersona', (req, res) => {
       res.json({ message: 'Paciente eliminado con éxito' });
   });
 });
+
+//
+// Ruta para insertar un nuevo paciente
+// Ruta para insertar un nuevo paciente
+// Ruta para insertar un nuevo paciente
+// Ruta para insertar un nuevo paciente
+app.post('/api/insertPaciente', (req, res) => {
+    const { nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento, idEstablecimientoSalud, idCriterioIngreso } = req.body;
+
+    const query = 'INSERT INTO persona (nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento, estado, EstablecimientoSalud_idEstablecimientoSalud, idCriterioIngreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)';
+
+    db.query(query, [nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento, idEstablecimientoSalud, idCriterioIngreso], (err, result) => {
+        if (err) {
+            console.error('Error insertando paciente:', err);
+            return res.status(500).json({ error: 'Error insertando paciente' });
+        }
+        res.json({ message: 'Paciente insertado con éxito', id: result.insertId });
+    });
+});
+
+
+
+
+
+
+
+//criterios
+// Ruta para obtener los criterios de ingreso
+app.get('/api/criterios', (req, res) => {
+    const query = 'SELECT * FROM criterioingreso WHERE estado = 1'; // Selecciona solo criterios activos
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching criterios:', err);
+            return res.status(500).json({ error: 'Error fetching criterios' });
+        }
+        res.json(results);
+    });
+});
+
+  

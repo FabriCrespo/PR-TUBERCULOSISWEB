@@ -42,6 +42,14 @@ const Paciente = () => {
         <Layout>
             <div className="patient-container">
                 <h1>Lista de Pacientes</h1>
+                {/* Botón para agregar un nuevo paciente */}
+                <button
+                    className="button-agregar"
+                    onClick={() => navigate('/InsertPaciente')}  // Redirigir a la página InsertPaciente
+                >
+                    Agregar Paciente
+                </button>
+
                 <table className="table-container">
                     <thead>
                         <tr>
