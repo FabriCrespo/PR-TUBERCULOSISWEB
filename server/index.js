@@ -45,31 +45,43 @@ app.get('/api/getPaciente/:idPersona', (req, res) => {
 
 //
 app.get('/api/pacientes', (req, res) => {
-  db.query('SELECT * FROM persona WHERE estado=1', (err, results) => {
-      if (err) {
-          console.error('Error fetching pacientes:', err);
-          res.status(500).send(err);
-          return;
-      }
-      res.json(results);
+    // Realizamos un JOIN entre la tabla 'persona' y 'criterioingreso'
+    const query = `
+      SELECT persona.*, criterioingreso.tipo, criterioingreso.subtipo, criterioingreso.estadoIngreso
+      FROM persona
+      LEFT JOIN criterioingreso ON persona.idCriterioIngreso = criterioingreso.idCriterioIngreso
+      WHERE persona.estado = 1
+    `;
+  
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching pacientes:', err);
+            return res.status(500).send(err);
+        }
+        res.json(results);
+    });
   });
-});
+  
 
 // Ruta para actualizar un paciente
 // Ruta para actualizar un paciente
 app.put('/api/updatePaciente/:idPersona', (req, res) => {
-    const { idPersona } = req.params;  // Make sure idPersona is passed correctly
-    const { nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento } = req.body;
+    const { idPersona } = req.params;  
+    const { nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, fechaNacimiento, idCriterioIngreso } = req.body;
 
-    // Format the date to YYYY-MM-DD
+    // Formatear la fecha de nacimiento
     const formattedFechaNacimiento = fechaNacimiento.split('T')[0]; 
 
-    const query = 'UPDATE persona SET nombres = ?, primerApellido = ?, segundoApellido = ?, numeroCelular = ?, CI = ?, direccion = ?, sexo = ?, fechaNacimiento = ? WHERE idPersona = ?';
+    const query = `
+        UPDATE persona 
+        SET nombres = ?, primerApellido = ?, segundoApellido = ?, numeroCelular = ?, CI = ?, direccion = ?, sexo = ?, fechaNacimiento = ?, idCriterioIngreso = ? 
+        WHERE idPersona = ?
+    `;
     
-    db.query(query, [nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, formattedFechaNacimiento, idPersona], (err, result) => {
+    db.query(query, [nombres, primerApellido, segundoApellido, numeroCelular, CI, direccion, sexo, formattedFechaNacimiento, idCriterioIngreso, idPersona], (err, result) => {
         if (err) {
             console.error('Error updating paciente:', err);
-            return res.status(500).json({ error: 'Error updating paciente', details: err });
+            return res.status(500).json({ error: 'Error actualizando paciente', details: err });
         }
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Paciente no encontrado' });
@@ -77,6 +89,7 @@ app.put('/api/updatePaciente/:idPersona', (req, res) => {
         res.json({ message: 'Paciente actualizado con éxito' });
     });
 });
+
 
 
 //

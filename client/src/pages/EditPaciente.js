@@ -13,12 +13,24 @@ const EditPaciente = () => {
         CI: '',
         direccion: '',
         sexo: '',
-        fechaNacimiento: ''  // Asegúrate de incluir la fecha de nacimiento
+        fechaNacimiento: '',
+        idCriterioIngreso: '' // Agregar el campo para criterio de ingreso
     });
-    
-    // Estado para errores de validación
-    const [errors, setErrors] = useState({});
 
+    const [criterios, setCriterios] = useState([]); // Estado para almacenar los criterios
+    const [errors, setErrors] = useState({}); // Estado para errores de validación
+
+    // Obtener los criterios de ingreso desde el backend
+    useEffect(() => {
+        fetch('http://localhost:3001/api/criterios')
+        .then(response => response.json())
+        .then(data => {
+            setCriterios(data);
+        })
+        .catch(error => console.error('Error fetching criterios:', error));
+    }, []);
+
+    // Cargar los datos del paciente desde el backend
     useEffect(() => {
         fetch(`http://localhost:3001/api/getPaciente/${idPersona}`)
         .then(response => {
@@ -33,12 +45,36 @@ const EditPaciente = () => {
         .catch(error => console.error('Error fetching paciente data:', error));
     }, [idPersona]);
 
-    // Función para validar los campos
+    // Validar que solo se ingresen letras (nombres, apellidos) y bloquear números/caracteres especiales
+    const validateTextInput = (e) => {
+        const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]*$/;
+        if (!regex.test(e.key)) {
+            e.preventDefault(); // Bloquear si no es letra o espacio
+        }
+    };
+
+    // Validar que el número de celular empiece con 6 o 7 y tenga exactamente 8 dígitos
+    const validatePhoneInput = (e) => {
+        const value = e.target.value + e.key;
+        const regex = /^[67]\d{0,7}$/;
+        if (!regex.test(value)) {
+            e.preventDefault(); // Bloquear si no cumple la condición
+        }
+    };
+
+    // Validar que el CI tenga un máximo de 13 caracteres
+    const validateCIInput = (e) => {
+        if (paciente.CI.length >= 13) {
+            e.preventDefault(); // Bloquear si supera los 13 caracteres
+        }
+    };
+
+    // Función para validar los campos antes de enviar
     const validateForm = () => {
         let valid = true;
         const newErrors = {};
 
-        // Validar nombre y apellido (solo letras)
+        // Validar nombres y apellidos (solo letras)
         const nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
         if (!nameRegex.test(paciente.nombres)) {
             valid = false;
@@ -48,22 +84,32 @@ const EditPaciente = () => {
             valid = false;
             newErrors.primerApellido = 'El apellido solo puede contener letras y espacios.';
         }
-        if (!nameRegex.test(paciente.segundoApellido)) {
+
+        // Validar Apellido Materno solo si se ingresa un valor (no es obligatorio)
+        if (paciente.segundoApellido && !nameRegex.test(paciente.segundoApellido)) {
             valid = false;
             newErrors.segundoApellido = 'El segundo apellido solo puede contener letras y espacios.';
         }
 
-        // Validar número de celular (debe ser de 8 dígitos y empezar con 6 o 7)
+        // Validar número de celular (exactamente 8 dígitos y debe empezar con 6 o 7)
         const celularRegex = /^[67]\d{7}$/;
         if (!celularRegex.test(paciente.numeroCelular)) {
             valid = false;
             newErrors.numeroCelular = 'El número de celular debe tener 8 dígitos y comenzar con 6 o 7.';
         }
 
+        // Validar que el criterio de ingreso esté seleccionado
+        if (!paciente.idCriterioIngreso) {
+            valid = false;
+            newErrors.idCriterioIngreso = 'Por favor selecciona un criterio de ingreso.';
+        }
+
+        // Asignar errores a los campos
         setErrors(newErrors);
         return valid;
     };
 
+    // Función para manejar la actualización del paciente
     const handleUpdate = (e) => {
         e.preventDefault();
 
@@ -106,6 +152,7 @@ const EditPaciente = () => {
                         className="input"
                         value={paciente.nombres}
                         onChange={(e) => setPaciente({ ...paciente, nombres: e.target.value })}
+                        onKeyPress={validateTextInput} // Validar que solo se ingresen letras y espacios
                         required
                     />
                     {errors.nombres && <p className="error-message">{errors.nombres}</p>}
@@ -117,6 +164,7 @@ const EditPaciente = () => {
                         className="input"
                         value={paciente.primerApellido}
                         onChange={(e) => setPaciente({ ...paciente, primerApellido: e.target.value })}
+                        onKeyPress={validateTextInput} // Validar que solo se ingresen letras y espacios
                         required
                     />
                     {errors.primerApellido && <p className="error-message">{errors.primerApellido}</p>}
@@ -128,16 +176,18 @@ const EditPaciente = () => {
                         className="input"
                         value={paciente.segundoApellido}
                         onChange={(e) => setPaciente({ ...paciente, segundoApellido: e.target.value })}
-                        required
+                        onKeyPress={validateTextInput} // Validar que solo se ingresen letras y espacios
                     />
+                    {errors.segundoApellido && <p className="error-message">{errors.segundoApellido}</p>}
                 </div>
                 <div className="form-group">
-                    <label className="label">Numero Celular</label>
+                    <label className="label">Número Celular</label>
                     <input
                         type="text"
                         className="input"
                         value={paciente.numeroCelular}
                         onChange={(e) => setPaciente({ ...paciente, numeroCelular: e.target.value })}
+                        onKeyPress={validatePhoneInput} // Validar que el número empiece con 6 o 7 y tenga 8 dígitos
                         required
                     />
                     {errors.numeroCelular && <p className="error-message">{errors.numeroCelular}</p>}
@@ -149,6 +199,7 @@ const EditPaciente = () => {
                         className="input"
                         value={paciente.CI}
                         onChange={(e) => setPaciente({ ...paciente, CI: e.target.value })}
+                        onKeyPress={validateCIInput} // Limitar a 13 caracteres
                         required
                     />
                 </div>
@@ -174,6 +225,26 @@ const EditPaciente = () => {
                         <option value="Masculino">Masculino</option>
                     </select>
                 </div>
+
+                {/* Campo para seleccionar el criterio de ingreso */}
+                <div className="form-group">
+                    <label className="label">Criterio de Ingreso</label>
+                    <select
+                        className="input"
+                        value={paciente.idCriterioIngreso}
+                        onChange={(e) => setPaciente({ ...paciente, idCriterioIngreso: e.target.value })}
+                        required
+                    >
+                        <option value="">Seleccionar...</option>
+                        {criterios.map(criterio => (
+                            <option key={criterio.idCriterioIngreso} value={criterio.idCriterioIngreso}>
+                                {criterio.tipo} - {criterio.subtipo} - {criterio.estadoIngreso}
+                            </option>
+                        ))}
+                    </select>
+                    {errors.idCriterioIngreso && <p className="error-message">{errors.idCriterioIngreso}</p>}
+                </div>
+
                 <div className="form-group">
                     <label className="label">Fecha de Nacimiento</label>
                     <input

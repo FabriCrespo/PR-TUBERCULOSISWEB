@@ -60,6 +60,7 @@ const Paciente = () => {
                             <th className="table-header">CI</th>
                             <th className="table-header">Sexo</th>
                             <th className="table-header">Dirección</th>
+                            <th className="table-header">Criterio Ingreso</th>
                             <th className="table-header">Acciones</th>
                         </tr>
                     </thead>
@@ -74,6 +75,8 @@ const Paciente = () => {
                                     <td>{paciente.CI}</td>
                                     <td>{paciente.sexo}</td>
                                     <td>{paciente.direccion}</td>
+                                    {/* Mostrar criterio de ingreso */}
+                                    <td>{paciente.tipo} - {paciente.subtipo} - {paciente.estadoIngreso}</td>
                                     <td>
                                         <button
                                             className="button-modificar"
@@ -92,7 +95,7 @@ const Paciente = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="8">No hay pacientes disponibles.</td>
+                                <td colSpan="9">No hay pacientes disponibles.</td>
                             </tr>
                         )}
                     </tbody>

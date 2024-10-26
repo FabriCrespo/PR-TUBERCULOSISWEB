@@ -12,7 +12,7 @@ const InsertPaciente = () => {
         direccion: '',
         sexo: '',
         fechaNacimiento: '',
-        idCriterioIngreso: '' // Asegúrate de usar "IdCriterioIngreso" correctamente
+        idCriterioIngreso: ''
     });
 
     const [criterios, setCriterios] = useState([]);
@@ -25,12 +25,34 @@ const InsertPaciente = () => {
             .catch(error => console.error('Error fetching criterios:', error));
     }, []);
 
-    // Función para manejar la inserción de un nuevo paciente
+    // Validar que solo se ingresen letras (bloquear números y caracteres especiales)
+    const validateTextInput = (e) => {
+        const regex = /^[A-Za-z\s]*$/;
+        if (!regex.test(e.key)) {
+            e.preventDefault(); // Evitar que se ingrese cualquier carácter que no sea letra o espacio
+        }
+    };
+
+    // Validar que el número de celular empiece con 6 o 7 y tenga máximo 8 dígitos
+    const validatePhoneInput = (e) => {
+        const value = e.target.value + e.key; // Simular el valor con el próximo carácter presionado
+        const regex = /^[67]\d{0,7}$/; // Empieza con 6 o 7 y hasta 8 dígitos
+
+        // Bloquear si el número no coincide con el formato
+        if (!regex.test(value)) {
+            e.preventDefault(); // Evitar la entrada si no cumple con la condición
+        }
+    };
+
+    // Validar que el número de celular tenga exactamente 8 dígitos antes de enviar
     const handleInsert = (e) => {
         e.preventDefault();
-        console.log('Valor de idCriterioIngreso:', paciente.idCriterioIngreso);
 
-        console.log('Paciente a insertar:', paciente); // Verifica los datos antes de enviar
+        // Verificar si el número de celular tiene exactamente 8 dígitos
+        if (paciente.numeroCelular.length !== 8) {
+            alert("El número de celular debe tener exactamente 8 dígitos.");
+            return;
+        }
 
         if (!paciente.idCriterioIngreso) {
             alert("Por favor selecciona un criterio de ingreso.");
@@ -42,17 +64,17 @@ const InsertPaciente = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(paciente)
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error insertando paciente');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Paciente insertado:', data);
-            navigate('/pacientes'); // Redirigir a la lista de pacientes después de insertar
-        })
-        .catch(error => console.error('Error:', error));
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error insertando paciente');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Paciente insertado:', data);
+                navigate('/pacientes'); // Redirigir a la lista de pacientes después de insertar
+            })
+            .catch(error => console.error('Error:', error));
     };
 
     return (
@@ -66,6 +88,7 @@ const InsertPaciente = () => {
                         type="text"
                         value={paciente.nombres}
                         onChange={(e) => setPaciente({ ...paciente, nombres: e.target.value })}
+                        onKeyPress={validateTextInput} // Agregar validación para bloquear caracteres no permitidos
                         required
                     />
                 </div>
@@ -77,6 +100,7 @@ const InsertPaciente = () => {
                         type="text"
                         value={paciente.primerApellido}
                         onChange={(e) => setPaciente({ ...paciente, primerApellido: e.target.value })}
+                        onKeyPress={validateTextInput} // Agregar validación para bloquear caracteres no permitidos
                         required
                     />
                 </div>
@@ -88,6 +112,7 @@ const InsertPaciente = () => {
                         type="text"
                         value={paciente.segundoApellido}
                         onChange={(e) => setPaciente({ ...paciente, segundoApellido: e.target.value })}
+                        onKeyPress={validateTextInput} // Agregar validación para bloquear caracteres no permitidos
                     />
                 </div>
 
@@ -98,6 +123,7 @@ const InsertPaciente = () => {
                         type="text"
                         value={paciente.numeroCelular}
                         onChange={(e) => setPaciente({ ...paciente, numeroCelular: e.target.value })}
+                        onKeyPress={validatePhoneInput} // Validación para celular
                         required
                     />
                 </div>
@@ -109,6 +135,11 @@ const InsertPaciente = () => {
                         type="text"
                         value={paciente.CI}
                         onChange={(e) => setPaciente({ ...paciente, CI: e.target.value })}
+                        onKeyPress={(e) => {
+                            if (paciente.CI.length >= 13) {
+                                e.preventDefault();  // Bloquear la entrada si ya tiene 13 caracteres
+                            }
+                        }}
                         required
                     />
                 </div>
@@ -120,6 +151,7 @@ const InsertPaciente = () => {
                         type="text"
                         value={paciente.direccion}
                         onChange={(e) => setPaciente({ ...paciente, direccion: e.target.value })}
+                        required
                     />
                 </div>
 
