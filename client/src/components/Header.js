@@ -9,7 +9,7 @@ const Header = () => {
     <header>
       <nav className="nav">
         <div className='container'>
-          <h1 className='logo'><a href='./'>SEDES - TUBERCULOSIS</a></h1>
+          <h1 className='logo'><a href='./'>PROGRAMA - TUBERCULOSIS</a></h1>
           <ul>
             <li><a href='./' className='current'>Inicio</a></li>
             <li><a href='./about' className='current'>Sobre Nosotros</a></li>

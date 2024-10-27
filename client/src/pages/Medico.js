@@ -22,21 +22,31 @@ const Medico = () => {
                 <table className="table-container">
                     <thead >
                         <tr>
-                            <th className="table-header" style={{display: ""}}>Nro.</th>
-                            <th className="table-header">Nombre Completo</th>
-                            <th className="table-header">CI</th>
-                            <th className="table-header">Correo</th>
-                            <th className="table-header">Nro. Celular</th>
+                        <th className="table-header" style={{display: ""}}>{medicos.length > 0 ? 'Nro' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Nombres' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Primer Apellido' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Segundo Apellido' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Número Celular' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Fecha Nacimiento' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Sexo' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Dirección' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Documento' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Establecimiento de Salud' : ''}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {medicos.map((medico) => (
-                            <tr className="table-row">
-                                <td className="table-data" key={medico.idPersona} style={{display: "none"}} >{medico.idPersona}</td>
-                                <td className="table-data" key={medico.idPersona}>{medico.nombreCompleto}</td>
-                                <td className="table-data" key={medico.idPersona}>{medico.CI}</td>
-                                <td className="table-data" key={medico.idPersona}>{medico.correo}</td>
-                                <td className="table-data" key={medico.idPersona}>{medico.numeroCelular}</td>
+                            <tr key={medico.Nro} className="table-row">
+                                <td className="table-data" style={{display: ""}} >{medico.Nro}</td>
+                                <td className="table-data">{medico.Nombres}</td>
+                                <td className="table-data">{medico['Primer Apellido']}</td>
+                                <td className="table-data">{medico['Segundo Apellido']}</td>
+                                <td className="table-data">{medico['Número Celular']}</td>
+                                <td className="table-data">{medico['Fecha Nacimiento']}</td>
+                                <td className="table-data">{medico.Sexo}</td>
+                                <td className="table-data">{medico.Dirección}</td>
+                                <td className="table-data">{medico.Documento}</td>
+                                <td className="table-data">{medico['Establecimiento de Salud']}</td>
                             </tr>
                         ))}
                     </tbody>
