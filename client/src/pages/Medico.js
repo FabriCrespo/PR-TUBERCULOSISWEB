@@ -2,10 +2,13 @@
 
 import Layout from "../components/Layout";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import './Persona.css';
 
 const Medico = () => {
     const [medicos, setMedicos] = useState([]);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch('http://localhost:3001/api/medicos')
@@ -32,6 +35,7 @@ const Medico = () => {
                             <th className="table-header">{medicos.length > 0 ? 'Dirección' : ''}</th>
                             <th className="table-header">{medicos.length > 0 ? 'Documento' : ''}</th>
                             <th className="table-header">{medicos.length > 0 ? 'Establecimiento de Salud' : ''}</th>
+                            <th className="table-header">{medicos.length > 0 ? 'Controles' : ''}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -47,6 +51,10 @@ const Medico = () => {
                                 <td className="table-data">{medico.Dirección}</td>
                                 <td className="table-data">{medico.Documento}</td>
                                 <td className="table-data">{medico['Establecimiento de Salud']}</td>
+                                <td>
+                                    <button className="button-modificar" onClick={() => navigate(`/EditDoctor/${medico.Nro}`)}>Modificar</button>
+                                    <button className="button-eliminar" onClick={() => navigate(`/DeleteDoctor/${medico.Nro}`)}> Eliminar</button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>

@@ -3,7 +3,7 @@ import './Formularios.css';
 
 const FormularioPacientes = () => {
     return (
-        
+        <div></div>
     );
 };
 

@@ -14,7 +14,7 @@ app.use(express.json()); // Para procesar datos JSON en las solicitudes
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '*************',  // DEBE CAMBIAR LA CONTRASEÑA
+  password: 'YOUNGE8H2S1re',  // DEBE CAMBIAR LA CONTRASEÑA
   database: 'tuberculosis',
 });
 
@@ -128,6 +128,26 @@ app.get('/api/medicos', (req, res) => {
   });
 });
 
+/* ****************************************************** */
+/* ****************** ACTUALIZAR MÉDICO ***************** */
+/* ****************************************************** */
+// ACTUALIZAR PERSONAL MEDICO
+app.put('/api/actualizar_medico/:id', (req, res) => {
+  const { id } = req.params;
+  const { nombres, primerApellido, segundoApellido, numeroCelular, fechaNacimiento, sexo, direccion, CI } = req.body;
+
+  const query = ` UPDATE persona P
+                  INNER JOIN personalsalud PS ON PS.persona_idPersona = P.idPersona
+                  SET  P.nombres = ?, P.primerApellido = ?, P.segundoApellido = ?, P.numeroCelular = ?, P.fechaNacimiento = ?, P.sexo = ?, P.direccion = ?, CI = ?, fechaActualizacion = CURRENT_TIMESTAMP
+                  WHERE P.estado = 1 AND PS.rol = 'Doctor' AND P.idPersona = ?;';`;
+  
+  db.query(query, [nombres, primerApellido, segundoApellido, numeroCelular, fechaNacimiento, sexo, direccion, CI, id], (error, result) => {
+    if (error) {
+      return res.status(500).send(error);
+    }
+    res.json({ message: 'Personal médico actualizado exitosamente', result });
+  });
+});
 
 
 // Iniciar el servidor
