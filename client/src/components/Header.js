@@ -16,6 +16,7 @@ const Header = () => {
             <li><a href='./pacientes'>Pacientes</a></li>
             <li><a href='./medicos'>Doctores</a></li>
             <li><a href='./'>Establecimientos</a></li>
+            <li><a href='./transferencia'>Transferencia</a></li>
             <li><a href='./login'>Login</a></li>
           </ul>
         </div>

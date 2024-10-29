@@ -14,8 +14,8 @@ app.use(express.json()); // Para procesar datos JSON en las solicitudes
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '',  // DEBE CAMBIAR LA CONTRASEÑA
-  database: '',
+  password: '1234',  
+  database: 'tuberculosis',
 });
 
 // Conectar a la base de datos
@@ -93,16 +93,17 @@ app.get('/api/admin-data', verifyRole('administrador'), (req, res) => {
 /* ****************************************************** */
 // PACIENTES 
 app.get('/api/pacientes', (req, res) => {
-  const query = ` SELECT idPersona, CONCAT(primerNombre, ' ', IFNULL(segundoNombre,''), ' ', primerApellido, ' ', IFNULL(segundoApellido,'')) AS nombreCompleto, CI
-                  FROM persona
-                  WHERE rol = 'paciente';`;
+  const query = `SELECT idPersona, CONCAT(nombres, ' ', IFNULL(primerApellido, ''), ' ', IFNULL(segundoApellido, '')) AS nombreCompleto, CI
+                 FROM persona;`; // Se eliminó el filtro por rol
   db.query(query, (error, result) => {
-    if (error) {
-      return res.status(500).send(error);
-    }
-    res.json(result);
+      if (error) {
+          return res.status(500).send(error);
+      }
+      res.json(result);
   });
 });
+
+
 
 
 /* ****************************************************** */
@@ -121,6 +122,20 @@ app.get('/api/medicos', (req, res) => {
   });
 });
 
+/* ****************************************************** */
+/* ******************* ESTABLECIMIENTOS ****************** */
+/* ****************************************************** */
+// ESTABLECIMIENTOS DE SALUD
+app.get('/api/establecimientos', (req, res) => {
+  const query = `SELECT idEstablecimientoSalud AS id, nombreEstablecimiento AS nombre
+                 FROM establecimientosalud;`;
+  db.query(query, (error, result) => {
+    if (error) {
+      return res.status(500).send(error);
+    }
+    res.json(result);
+  });
+});
 
 
 // Iniciar el servidor

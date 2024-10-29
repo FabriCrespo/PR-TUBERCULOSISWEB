@@ -30,7 +30,7 @@ const Medico = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {medicos.map((medico) => (
+                        {/*medicos.map((medico) => (
                             <tr className="table-row">
                                 <td className="table-data" key={medico.idPersona} style={{display: "none"}} >{medico.idPersona}</td>
                                 <td className="table-data" key={medico.idPersona}>{medico.nombreCompleto}</td>
@@ -38,7 +38,7 @@ const Medico = () => {
                                 <td className="table-data" key={medico.idPersona}>{medico.correo}</td>
                                 <td className="table-data" key={medico.idPersona}>{medico.numeroCelular}</td>
                             </tr>
-                        ))}
+                        ))*/}
                     </tbody>
                 </table>
 
