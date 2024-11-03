@@ -5,53 +5,55 @@ import { useNavigate } from 'react-router-dom';
 
 
 const Login = () => {
-    /*const [personal, setPersona] = useState([]);*/
-    //const [usuario, setUsuario] = useState('');
-    const [correo, setCorreo] = useState('');   // Correo del usuario
-    const [contrasenia, setContrasenia] = useState(''); // Contrasenia
-    const [error, setError] = useState('');     // Mensajes de error
+    const [nombreUsuario, setNombreUsuario] = useState('');       // Nombre de usuario
+    const [contrasenia, setContrasenia] = useState('');       // Contrasenia
+    const [error, setError] = useState('');             // Mensajes de error
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError('');
 
-        const c_correo = correo.replace(/"/g, '');
-        const c_contrasenia = contrasenia.replace(/"/g, '');
+        //const c_username = username.replace(/"/g, '');
+        //const c_password = password.replace(/"/g, '');
 
         //fetch(`http://localhost:3001/api/login?correo=${'admin@gmail.com'}&contrasenia=${'admin123'}`)
         //fetch(`http://localhost:3001/api/login?usuario=doc1&contrasenia=doc1`)
-        fetch(`http://localhost:3001/api/login?usuario=${encodeURIComponent(c_correo)}&contrasenia=${encodeURIComponent(c_contrasenia)}`)
+        try {
+            const response = await fetch(`http://localhost:3001/api/login?nombreUsuario=${encodeURIComponent(nombreUsuario)}&contrasenia=${encodeURIComponent(contrasenia)}`);
+            const data = await response.json();
 
-            .then((response) => response.json())
-            .then((data) => {
-                if (data) {
-                    const user = data;   // Acceder al primer usuario
-                    
-                    // GUARDAMOS EL ROL EN localStorage
-                    //localStorage.setItem('userRole', user.rol);
-                    localStorage.setItem('userRole', user['Nivel Acceso']);
-                    
-                    // REDIRIGIMOS SEGUN EL ROL DEL USUARIO
-                    if (user['Nivel Acceso'] === 'Administrador') {
-                        navigate('./../medicos');
-                    } else if (user['Nivel Acceso'] === 'Doctor') {
-                        navigate('/../pacientes');
-                    }
-                } else {
-                    setError('Credenciales incorrectas');
+            if (response.ok) {
+                const userRole = data['Nivel Acceso'];
+                localStorage.setItem('userRole', userRole);
+
+                // REDIRIGIMOS SEGUN EL ROL DEL USUARIO
+                if (userRole === 'Administrador') {
+                    navigate('./../medicos');
+                } else if (userRole === 'Doctor') {
+                    navigate('./../pacientes');
                 }
-            })
-            .catch((error) => console.error('Error fetching', error));
+            } else {
+                setError(data.error || 'Credenciales incorrectas');
+            }
+            
+            
+            
+        } catch (error) {
+            console.error('Error al iniciar sesión:', error);
+            setError('Error de conexión, intente nuevamente');
+        }
+        
     };
     
     
     return (
         <Layout>
             <Signin 
-                correo={correo} 
-                setCorreo={setCorreo} 
-                contrasenia={contrasenia} 
-                setContrasenia={setContrasenia} 
+                /*usuario={username} 
+                setUsuario={setUsername} 
+                contrasenia={password} 
+                setContrasenia={setPassword} 
                 handleLogin={handleLogin} ></Signin>
             {error && <p style={{color: 'red'}}>{error}</p>}
         </Layout>
@@ -59,3 +61,19 @@ const Login = () => {
 };
 
 export default Login;
+
+/*
+HTTP Request    HTTP/1.1 200 OK
+Status line     
+HEADERS
+BODY
+
+
+
+Scheme              hosta name              Path
+https://            graph.microsoft.com     
+
+
+
+
+*/

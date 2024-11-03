@@ -40,39 +40,43 @@ app.get('/api/redsalud', (req, res) => {
 });
 
 
+
 /* ****************************************************** */
 /* ************************ LOGIN *********************** */
 /* ****************************************************** */
 // LOGIN O AUTENTICACION DE USUARIOS CON VERIFICACION DE NOMBRE_USUARIO Y CONTRASEÑA
+// NOTA:      EJECUTAR -> ALTER TABLE personalsalud ADD COLUMN estado TINYINT DEFAULT 1;
+//            1
+
+
 app.get('/api/login', (req, res) => {
-  const { usuario, contrasenia } = req.query;
+  const { nombreUsuario, contrasenia } = req.query;
   
-  if (!usuario || !contrasenia) {
+  if (!nombreUsuario || !contrasenia) {
     return res.status(400).json({ error: 'Nombre de usuario y contraseña son obligatorios' });
   }
 
-  /*const query = `SELECT *
-                 FROM persona
-                 WHERE estado = 1 AND (correo = ? AND contrasenia = ?);`;*/
   const query = ` SELECT PS.persona_idPersona AS Nro, PS.usuario AS Credencial, PS.contrasenia AS 'Clave Segura', PS.rol AS 'Nivel Acceso'
                   FROM personalsalud PS
-                  WHERE PS.usuario = ? AND PS.contrasenia = ?;`;
-  /*const query = ` SELECT *
-                  FROM personalsalud
-                  WHERE usuario = ? AND contrasenia = ?;`;*/
+                  WHERE PS.usuario = ? AND PS.contrasenia = ? AND PS.estado = 1;`;   // CONSULTA SQL
 
-  db.query(query, [usuario, contrasenia], (error, result) => {
+  db.query(query, [nombreUsuario, contrasenia], (error, result) => {      // EJECUCION
     if (error) {
-      return res.status(500).send(error);
+      return res.status(500).json({ error: 'Error en el servidor' });
     }
 
     if (result.length === 0) {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
-    res.json(result[0]);  // ENVIA EL PRIMER USUARIO ENCONTRADO
+    res.json({      // ENVIO DE DATOS
+      id: result[0].Nro,
+      usuario: result[0].Credencial,
+      rol: result[0]['Nivel Acceso']
+    });
   });
 });
+
 
 // RUTA PROTEGIDA SOLO PARA ADMINISTRADORES
 const verifyRole = (role) => {

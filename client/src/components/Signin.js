@@ -1,7 +1,7 @@
 import React from "react";
 import './Account.css';
 
-const Signin = ({ correo, setCorreo, contrasenia, setContrasenia, handleLogin }) => {
+const Signin = ({ username, setUsername, password, setPassword, handleLogin }) => {
     return (
         <section className="section-signin">
             <div className="box">
@@ -13,10 +13,10 @@ const Signin = ({ correo, setCorreo, contrasenia, setContrasenia, handleLogin })
 
                     <form onSubmit={handleLogin}>
                         <div className="input-field">
-                            <input type="text" className="input" placeholder="Ingrese el nombre de usuario" value={correo} onChange={(e) => setCorreo(e.target.value) } required></input>
+                            <input type="text" className="input" placeholder="Ingrese su nombre de usuario" value={username} onChange={(e) => setUsername(e.target.value) } required></input>
                         </div>
                         <div className="input-field">
-                            <input type="password" className="input" placeholder="Ingrese la contraseña" value={contrasenia} onChange={(e) => setContrasenia(e.target.value)} required></input>
+                            <input type="password" className="input" placeholder="Ingrese su contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required></input>
                             <i className="fa-solid fa-lock"></i>
                         </div>
                         <div className="input-field btn-submit">
