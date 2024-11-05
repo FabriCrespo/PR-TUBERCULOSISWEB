@@ -108,7 +108,7 @@ app.get('/api/admin-data', verifyRole('administrador'), (req, res) => {
 /* ****************************************************** */
 // PACIENTES 
 app.get('/api/pacientes', (req, res) => {
-  const query = `SELECT idPersona, CONCAT(nombres, ' ', IFNULL(primerApellido, ''), ' ', IFNULL(segundoApellido, '')) AS nombreCompleto, CI
+  const query = `SELECT idPersona, CONCAT(nombres, ' ', IFNULL(primerApellido, ''), ' ', IFNULL(segundoApellido, '')) AS nombreCompleto, CI, fechaNacimiento, sexo
                  FROM persona;`; // Se eliminó el filtro por rol
   db.query(query, (error, result) => {
       if (error) {
@@ -142,7 +142,7 @@ app.get('/api/medicos', (req, res) => {
 /* ****************************************************** */
 // ESTABLECIMIENTOS DE SALUD
 app.get('/api/establecimientos', (req, res) => {
-  const query = `SELECT idEstablecimientoSalud AS id, nombreEstablecimiento AS nombre
+  const query = `SELECT idEstablecimientoSalud AS id, nombreEstablecimiento AS nombre, clasificacion, telefono
                  FROM establecimientosalud;`;
   db.query(query, (error, result) => {
     if (error) {
