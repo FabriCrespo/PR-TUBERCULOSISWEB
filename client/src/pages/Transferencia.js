@@ -9,32 +9,26 @@ const Transferencia = () => {
         idEstablecimientoSaludOrigen: "",
         idEstablecimientoSaludDestino: "",
         persona_idPersona: "",
-        motivo: "",
-        observacion: "",
+        Motivo: "",
+        Observacion: "",
         documentoTransferencia: null
     });
 
     const [establecimientos, setEstablecimientos] = useState([]);
     const [personas, setPersonas] = useState([]);
 
-
     useEffect(() => {
-      fetch('http://localhost:3001/api/establecimientos')
-          .then((response) => response.json())
-          .then((data) => setEstablecimientos(data))
-          .catch((error) => console.error('Error fetching establecimientos:', error));
+        fetch('http://localhost:3001/api/establecimientos')
+            .then((response) => response.json())
+            .then((data) => setEstablecimientos(data))
+            .catch((error) => console.error('Error fetching establecimientos:', error));
   
-          fetch('http://localhost:3001/api/pacientes')
-          .then((response) => response.json())
-          .then((data) => {
-              console.log('Pacientes data:', data);  // Agrega este log
-              setPersonas(data);  // Asegúrate de que `data` sea un arreglo
-          })
-          .catch((error) => console.error('Error fetching pacientes:', error));
-  }, []);
+        fetch('http://localhost:3001/api/pacientes')
+            .then((response) => response.json())
+            .then((data) => setPersonas(data))
+            .catch((error) => console.error('Error fetching pacientes:', error));
+    }, []);
   
-  
-
     const handleChange = (e) => {
         const { name, value, files } = e.target;
         if (name === "documentoTransferencia") {
@@ -44,15 +38,39 @@ const Transferencia = () => {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const formDataObj = new FormData();
-        Object.keys(formData).forEach(key => {
-            formDataObj.append(key, formData[key]);
-        });
-
-        console.log("Datos de transferencia:", formData);
+    
+        const payload = new FormData();
+        payload.append("idEstablecimientoSaludOrigen", formData.idEstablecimientoSaludOrigen);
+        payload.append("persona_idPersona", formData.persona_idPersona);
+        payload.append("idEstablecimientoSaludDestino", formData.idEstablecimientoSaludDestino);
+        payload.append("Motivo", formData.Motivo);
+        payload.append("Observacion", formData.Observacion);
+        
+        if (formData.documentoTransferencia) {
+            payload.append("documentoTransferencia", formData.documentoTransferencia);
+        }
+    
+        console.log("Datos a enviar:", formData);
+    
+        try {
+            const response = await fetch("http://localhost:3001/api/transferencias", {
+                method: "POST",
+                body: payload
+            });
+    
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+    
+            const data = await response.json();
+            console.log("Transferencia registrada con éxito:", data);
+        } catch (error) {
+            console.error("Error al registrar transferencia:", error);
+        }
     };
+    
 
     return (
         <Layout>
@@ -102,7 +120,9 @@ const Transferencia = () => {
                         >
                             <option value="">Selecciona una persona</option>
                             {personas.map(persona => (
-                                <option key={persona.id} value={persona.id}>{persona.nombreCompleto}</option>
+                                <option key={persona.idPersona} value={persona.idPersona}>
+                                    {persona.nombreCompleto}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -157,3 +177,4 @@ const Transferencia = () => {
 };
 
 export default Transferencia;
+

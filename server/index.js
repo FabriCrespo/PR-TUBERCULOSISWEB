@@ -2,9 +2,24 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');  // Importar el módulo cors
+const multer = require('multer');
+const path = require('path');
 
 const app = express();
 const PORT = 3001;
+
+
+// Configuración de multer para almacenar archivos
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Carpeta donde se guardarán los archivos
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Renombrar archivo
+  },
+});
+
+const upload = multer({ storage });
 
 // Middleware
 app.use(cors()); // Permitir solicitudes desde otros dominios
@@ -15,7 +30,7 @@ const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: '1234',  
-  database: 'tuberculosis',
+  database: 'tuberculosisproyect',
 });
 
 // Conectar a la base de datos
@@ -136,6 +151,52 @@ app.get('/api/establecimientos', (req, res) => {
     res.json(result);
   });
 });
+
+
+// Registrar una nueva transferencia con archivo
+app.post('/api/transferencias', upload.single('documentoTransferencia'), (req, res) => {
+  console.log("Datos recibidos:", req.body);
+  
+  const {
+    idEstablecimientoSaludOrigen,
+    persona_idPersona,
+    idEstablecimientoSaludDestino,
+    Motivo,
+    Observacion,
+  } = req.body;
+
+  const imagenReferencia = req.file ? req.file.filename : null; // Guardar el nombre del archivo
+
+  if (!idEstablecimientoSaludOrigen || !persona_idPersona || !idEstablecimientoSaludDestino || !Motivo || !imagenReferencia) {
+    return res.status(400).json({ error: 'Faltan datos obligatorios' });
+  }
+
+  const query = `
+    INSERT INTO transferencia (
+      idEstablecimientoSaludOrigen,
+      idEstablecimientoSaludDestino,
+      idPersona,
+      motivo,
+      observacion,
+      documentoRef,
+      estado,
+      fechaCreacion,
+      fechaActualizacion
+    ) VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NULL)
+  `;
+
+  db.query(
+    query,
+    [idEstablecimientoSaludOrigen, persona_idPersona, idEstablecimientoSaludDestino, Motivo, Observacion, imagenReferencia],
+    (error, result) => {
+      if (error) {
+        return res.status(500).send(error);
+      }
+      res.json({ message: 'Transferencia registrada exitosamente', idTransferencia: result.insertId });
+    }
+  );
+});
+
 
 
 // Iniciar el servidor
