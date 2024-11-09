@@ -17,17 +17,20 @@ function Paciente() {
   }, []);
 
   const desactivarPaciente = (id) => {
-    axios.put(`http://localhost:3001/api/pacientesDelete/${id}/estado`)
-      .then(() => {
-        setPersonas(personas.map(persona => 
-          persona.idPersona === id ? { ...persona, estado: 0 } : persona
-        ));
-        alert('Paciente desactivado correctamente');
-      })
-      .catch(error => {
-        console.error('Error al desactivar paciente:', error);
-        alert('No se pudo desactivar el paciente. Intente de nuevo más tarde.');
-      });
+    const confirmed = window.confirm('¿Estás seguro de que deseas eliminar este paciente?');
+    if (confirmed) {
+      axios.put(`http://localhost:3001/api/pacientesDelete/${id}/estado`)
+        .then(() => {
+          setPersonas(personas.map(persona => 
+            persona.idPersona === id ? { ...persona, estado: 0 } : persona
+          ));
+          alert('Paciente desactivado correctamente');
+        })
+        .catch(error => {
+          console.error('Error al desactivar paciente:', error);
+          alert('No se pudo desactivar el paciente. Intente de nuevo más tarde.');
+        });
+    }
   };
 
   // Función para manejar la actualización de un paciente
@@ -98,7 +101,7 @@ function Paciente() {
                     className="btn btn-danger btn-sm"
                     onClick={() => desactivarPaciente(persona.idPersona)} // Cambiado a desactivarPaciente
                   >
-                    <i className="bi bi-trash-fill me-1"></i>Desactivar
+                    <i className="bi bi-trash-fill me-1"></i>Eliminar
                   </button>
                 </div>
               </td>

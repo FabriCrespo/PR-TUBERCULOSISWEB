@@ -23,18 +23,22 @@ function ActualizarPaciente() {
   const [criterios, setCriterios] = useState([]);
 
   useEffect(() => {
-    // Cargar los datos del paciente
     const obtenerPaciente = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/api/pacientesForm/${id}`);
-        console.log(response.data); // Verifica el formato de los datos
-        setPaciente(response.data);
+        const data = response.data;
+
+        // Convertir fechaNacimiento a formato 'YYYY-MM-DD' si es necesario
+        if (data.fechaNacimiento) {
+          data.fechaNacimiento = new Date(data.fechaNacimiento).toISOString().split('T')[0];
+        }
+
+        setPaciente(data);
       } catch (error) {
         console.error('Error al obtener los datos del paciente:', error);
       }
     };
 
-    // Cargar los datos de establecimientos y criterios
     const obtenerEstablecimientos = async () => {
       try {
         const response = await axios.get('http://localhost:3001/api/establecimientos');
@@ -58,7 +62,34 @@ function ActualizarPaciente() {
     obtenerCriterios();
   }, [id]);
 
-  const actualizarPaciente = () => {
+  const validateTextInput = (e) => {
+    const regex = /^[A-Za-z\s]*$/;
+    if (!regex.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const validatePhoneInput = (e) => {
+    const value = e.target.value + e.key;
+    const regex = /^[67]\d{0,7}$/;
+    if (!regex.test(value)) {
+      e.preventDefault();
+    }
+  };
+
+  const actualizarPaciente = (e) => {
+    e.preventDefault();
+
+    if (paciente.numeroCelular.length !== 8) {
+      alert("El número de celular debe tener exactamente 8 dígitos.");
+      return;
+    }
+
+    if (!paciente.idCriterioIngreso) {
+      alert("Por favor selecciona un criterio de ingreso.");
+      return;
+    }
+
     axios.put(`http://localhost:3001/api/pacientes/${id}`, paciente)
       .then(response => {
         alert('Paciente actualizado correctamente');
@@ -75,15 +106,16 @@ function ActualizarPaciente() {
       <h2 className="text-center mb-4">Actualizar Paciente</h2>
 
       <div className="card p-4">
-        <form onSubmit={(e) => { e.preventDefault(); actualizarPaciente(); }}>
+        <form onSubmit={actualizarPaciente}>
           <div className="form-group mb-3">
             <label>Nombres</label>
             <input
               type="text"
               className="form-control"
               placeholder="Nombres"
-              value={paciente.nombres}             
+              value={paciente.nombres}
               onChange={e => setPaciente({ ...paciente, nombres: e.target.value })}
+              onKeyPress={validateTextInput}
               required
             />
           </div>
@@ -95,6 +127,7 @@ function ActualizarPaciente() {
               placeholder="Primer Apellido"
               value={paciente.primerApellido}
               onChange={e => setPaciente({ ...paciente, primerApellido: e.target.value })}
+              onKeyPress={validateTextInput}
               required
             />
           </div>
@@ -106,6 +139,7 @@ function ActualizarPaciente() {
               placeholder="Segundo Apellido"
               value={paciente.segundoApellido}
               onChange={e => setPaciente({ ...paciente, segundoApellido: e.target.value })}
+              onKeyPress={validateTextInput}
             />
           </div>
           <div className="form-group mb-3">
@@ -116,6 +150,7 @@ function ActualizarPaciente() {
               placeholder="Celular"
               value={paciente.numeroCelular}
               onChange={e => setPaciente({ ...paciente, numeroCelular: e.target.value })}
+              onKeyPress={validatePhoneInput}
               required
             />
           </div>
@@ -160,6 +195,11 @@ function ActualizarPaciente() {
               placeholder="CI"
               value={paciente.CI}
               onChange={e => setPaciente({ ...paciente, CI: e.target.value })}
+              onKeyPress={(e) => {
+                if (paciente.CI.length >= 13) {
+                  e.preventDefault();
+                }
+              }}
               required
             />
           </div>
@@ -180,7 +220,7 @@ function ActualizarPaciente() {
             </select>
           </div>
           <div className="form-group mb-3">
-            <label>Criterio</label>
+            <label>Criterio de Ingreso</label>
             <select
               className="form-control"
               value={paciente.idCriterioIngreso}
