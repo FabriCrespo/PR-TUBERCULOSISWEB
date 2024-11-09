@@ -16,7 +16,7 @@ const Footer = () => {
         <div className='footer-links'>
           <h2 className='footer-links-h blind'>FOOTER MENUS</h2>
           <div className='footer-links-list'>
-            <a href='#' target='_blank' className='footer-links-a'>blank</a>
+            <a href='/' target='_blank' className='footer-links-a'>home</a>
           </div>
         </div>
 
@@ -56,7 +56,7 @@ const Footer = () => {
         </div>
         */ }
         
-        <p className='copyright'>&copyright; Since 1945 SEDES, All Rights Reserved.</p>
+        <p className='copyright'>&copy; Desde 1945 SEDES, Todos los derechos reservados.</p>
 
       </div>
     </footer>

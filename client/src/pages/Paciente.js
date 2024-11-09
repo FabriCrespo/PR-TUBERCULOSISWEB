@@ -1,139 +1,119 @@
 import React, { useEffect, useState } from 'react';
-import Layout from '../components/Layout';
-import { useNavigate } from 'react-router-dom';  // Importa useNavigate
-import './Persona.css';
+import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Paciente = () => {
-    const [pacientes, setPacientes] = useState([]);
-    const navigate = useNavigate();  // Usa useNavigate para poder redirigir
+function Paciente() {
+  const [personas, setPersonas] = useState([]);
+  const [busqueda, setBusqueda] = useState('');
+  const navigate = useNavigate(); // Para redirigir a otras rutas
 
-    // Hacer la solicitud al backend para obtener los pacientes
-    useEffect(() => {
-        fetch('http://localhost:3001/api/pacientes')
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-            .then((data) => setPacientes(data))
-            .catch((error) => console.error('Error fetching data:', error));
-    }, []);
+  useEffect(() => {
+    axios.get('http://localhost:3001/api/pacientes')
+      .then(response => setPersonas(response.data))
+      .catch(error => {
+        console.error('Error al cargar los datos de pacientes:', error);
+        alert('No se pudieron cargar los datos de pacientes. Intente de nuevo más tarde.');
+      });
+  }, []);
 
-    // Función para eliminar un paciente
-    const handleDelete = (idPersona) => {
-        const confirmed = window.confirm('¿Estás seguro de que deseas eliminar este paciente?');
-        if (confirmed) {
-            fetch(`http://localhost:3001/api/deletePaciente/${idPersona}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error eliminando paciente');
-                }
-                // Si el paciente fue eliminado exitosamente (estado cambiado a 0)
-                console.log('Paciente eliminado correctamente');
-                // Volver a cargar la lista de pacientes después de la eliminación
-                setPacientes(prevPacientes => prevPacientes.filter(paciente => paciente.idPersona !== idPersona));
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    };
+  const desactivarPaciente = (id) => {
+    axios.put(`http://localhost:3001/api/pacientesDelete/${id}/estado`)
+      .then(() => {
+        setPersonas(personas.map(persona => 
+          persona.idPersona === id ? { ...persona, estado: 0 } : persona
+        ));
+        alert('Paciente desactivado correctamente');
+      })
+      .catch(error => {
+        console.error('Error al desactivar paciente:', error);
+        alert('No se pudo desactivar el paciente. Intente de nuevo más tarde.');
+      });
+  };
 
-    return (
-        <Layout>
-            <div className="patient-container">
-                <h1>Lista de Pacientes</h1>
-                {/* Botón para agregar un nuevo paciente */}
-                <button
-                    className="button-agregar"
-                    onClick={() => navigate('/InsertPaciente')}  // Redirigir a la página InsertPaciente
-                >
-                    Agregar Paciente
-                </button>
+  // Función para manejar la actualización de un paciente
+  const handleActualizarPaciente = (id) => {
+    navigate(`/actualizar-paciente/${id}`);
+  };
 
-                <table className="table-container">
-                    <thead>
-                        <tr>
-                            <th className="table-header">Nombres</th>
-                            <th className="table-header">Apellido Paterno</th>
-                            <th className="table-header">Apellido Materno</th>
-                            <th className="table-header">Numero Celular</th>
-                            <th className="table-header">CI</th>
-                            <th className="table-header">Sexo</th>
-                            <th className="table-header">Dirección</th>
-                            <th className="table-header">Criterio Ingreso</th>
-                            <th className="table-header">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {pacientes.length > 0 ? (
-                            pacientes.map((paciente) => (
-                                <tr key={paciente.idPersona}>
-                                    <td>{paciente.nombres}</td>
-                                    <td>{paciente.primerApellido}</td>
-                                    <td>{paciente.segundoApellido}</td>
-                                    <td>{paciente.numeroCelular}</td>
-                                    <td>{paciente.CI}</td>
-                                    <td>{paciente.sexo}</td>
-                                    <td>{paciente.direccion}</td>
-                                    {/* Mostrar criterio de ingreso */}
-                                    <td>{paciente.tipo} - {paciente.subtipo} - {paciente.estadoIngreso}</td>
-                                    <td>
-                                        <button
-                                            className="button-modificar"
-                                            onClick={() => navigate(`/EditPaciente/${paciente.idPersona}`)}
-                                        >
-                                            Modificar
-                                        </button>
-                                        <button 
-                                            className="button-eliminar"
-                                            onClick={() => handleDelete(paciente.idPersona)}
-                                        >
-                                            Eliminar
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="9">No hay pacientes disponibles.</td>
-                          {/*
-                            <th className="table-header" style={{display: ""}}>{pacientes.length > 0 ? 'Nro' : ''}</th>
-                            <th className="table-header">{pacientes.length > 0 ? 'Nombres' : ''}</th>
-                            <th className="table-header">{pacientes.length > 0 ? 'Primer Apellido' : ''}</th>
-                            <th className="table-header">{pacientes.length > 0 ? 'Segundo Apellido' : ''}</th>
-                            <th className="table-header">{pacientes.length > 0 ? 'Número Celular' : ''}</th>
-                            <th className="table-header">{pacientes.length > 0 ? 'Fecha Nacimiento' : ''}</th>
-                            <th className="table-header">{pacientes.length > 0 ? 'Sexo' : ''}</th>
-                            <th className="table-header">{pacientes.length > 0 ? 'Dirección' : ''}</th>
-                            <th className="table-header">{pacientes.length > 0 ? 'Documento' : ''}</th>
-                            <th className="table-header">{pacientes.length > 0 ? 'Establecimiento de Salud' : ''}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {pacientes.map((paciente) => (
-                            <tr key={paciente.Nro} className="table-row">
-                                <td className="table-data" style={{display: ""}} >{paciente.Nro}</td>
-                                <td className="table-data">{paciente.Nombres}</td>
-                                <td className="table-data">{paciente['Primer Apellido']}</td>
-                                <td className="table-data">{paciente['Segundo Apellido']}</td>
-                                <td className="table-data">{paciente['Número Celular']}</td>
-                                <td className="table-data">{paciente['Fecha Nacimiento']}</td>
-                                <td className="table-data">{paciente.Sexo}</td>
-                                <td className="table-data">{paciente.Dirección}</td>
-                                <td className="table-data">{paciente.Documento}</td>
-                                <td className="table-data">{paciente['Establecimiento Salud']}</td>*/}
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </Layout>
-    );
-};
+  // Filtrar pacientes según el nombre
+  const pacientesFiltrados = personas.filter(persona =>
+    persona.nombreCompleto.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
+  // Función para formatear la fecha de nacimiento
+  const formatearFecha = (fecha) => {
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES'); // Formato DD/MM/AAAA
+  };
+
+  return (
+    <div className="container mt-4">
+      <h2 className="text-center mb-4">Lista de Pacientes</h2>
+
+      {/* Campo de búsqueda alineado a la izquierda */}
+      <div className="mb-3" style={{ maxWidth: '300px' }}>
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Buscar por nombre de paciente"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
+      </div>
+
+      <table className="table table-bordered table-hover">
+        <thead className="table-light">
+          <tr>
+            <th>Nombre Completo</th>
+            <th>Celular</th>
+            <th>Fecha de Nacimiento</th>
+            <th>Sexo</th>
+            <th>Dirección</th>
+            <th>CI</th>
+            <th>Establecimiento de Salud</th>
+            <th>Criterio de Ingreso</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pacientesFiltrados.map(persona => (
+            <tr key={persona.idPersona}>
+              <td>{persona.nombreCompleto}</td>
+              <td>{persona.numeroCelular}</td>
+              <td>{formatearFecha(persona.fechaNacimiento)}</td>
+              <td>{persona.sexo}</td>
+              <td>{persona.direccion}</td>
+              <td>{persona.CI}</td>
+              <td>{persona.nombreEstablecimiento}</td>
+              <td>{persona.criterioIngreso}</td>
+              <td>
+                <div className="btn-group" role="group">
+                  <button
+                    className="btn btn-warning btn-sm"
+                    onClick={() => handleActualizarPaciente(persona.idPersona)}
+                  >
+                    <i className="bi bi-pencil-fill me-1"></i>Actualizar
+                  </button>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => desactivarPaciente(persona.idPersona)} // Cambiado a desactivarPaciente
+                  >
+                    <i className="bi bi-trash-fill me-1"></i>Desactivar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="d-flex justify-content-center mt-4">
+        <Link to="/añadir-paciente" className="btn btn-primary">
+          <i className="bi bi-plus-lg me-1"></i>Añadir Paciente
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 export default Paciente;

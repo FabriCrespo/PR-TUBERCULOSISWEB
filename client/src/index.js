@@ -1,17 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
 import App from './App';
+import './index.css';
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  <React.StrictMode>  
     <div id='main'></div>
     <App />
   </React.StrictMode>
 );
 
-/**
- * IMPORTANTE! EJECUTAR EL SIGIENTE COMANDO EN EL DIRECTORIO ACTUAL (client)
- * npm install
- */
+
