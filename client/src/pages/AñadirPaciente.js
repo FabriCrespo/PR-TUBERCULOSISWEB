@@ -44,7 +44,32 @@ function AñadirPaciente() {
     obtenerCriterios();
   }, []);
 
-  const añadirPaciente = () => {
+  const validateTextInput = (e) => {
+    const regex = /^[A-Za-z\s]*$/;
+    if (!regex.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const validatePhoneInput = (e) => {
+    const value = e.target.value + e.key;
+    const regex = /^[67]\d{0,7}$/;
+    if (!regex.test(value)) {
+      e.preventDefault();
+    }
+  };
+  const añadirPaciente = (e) => {
+    e.preventDefault();
+
+    if (nuevoPaciente.numeroCelular.length !== 8) {
+      alert("El número de celular debe tener exactamente 8 dígitos.");
+      return;
+    }
+
+    if (!nuevoPaciente.idCriterioIngreso) {
+      alert("Por favor selecciona un criterio de ingreso.");
+      return;
+    }
     axios.post('http://localhost:3001/api/pacientes', nuevoPaciente)
       .then(response => {
         alert('Paciente añadido correctamente');
@@ -73,7 +98,7 @@ function AñadirPaciente() {
       <h2 className="text-center mb-4">Añadir Nuevo Paciente</h2>
 
       <div className="card p-4">
-        <form onSubmit={(e) => { e.preventDefault(); añadirPaciente(); }}>
+      <form onSubmit={añadirPaciente}>
           <div className="form-group mb-3">
             <label>Nombres</label>
             <input
@@ -82,6 +107,7 @@ function AñadirPaciente() {
               placeholder="Nombres"
               value={nuevoPaciente.nombres}
               onChange={e => setNuevoPaciente({ ...nuevoPaciente, nombres: e.target.value })}
+              onKeyPress={validateTextInput}
               required
             />
           </div>
@@ -93,6 +119,7 @@ function AñadirPaciente() {
               placeholder="Primer Apellido"
               value={nuevoPaciente.primerApellido}
               onChange={e => setNuevoPaciente({ ...nuevoPaciente, primerApellido: e.target.value })}
+              onKeyPress={validateTextInput}
               required
             />
           </div>
@@ -104,6 +131,7 @@ function AñadirPaciente() {
               placeholder="Segundo Apellido"
               value={nuevoPaciente.segundoApellido}
               onChange={e => setNuevoPaciente({ ...nuevoPaciente, segundoApellido: e.target.value })}
+              onKeyPress={validateTextInput}
             />
           </div>
           <div className="form-group mb-3">
@@ -114,6 +142,7 @@ function AñadirPaciente() {
               placeholder="Celular"
               value={nuevoPaciente.celular}
               onChange={e => setNuevoPaciente({ ...nuevoPaciente, numeroCelular: e.target.value })}
+              onKeyPress={validatePhoneInput}
               required
             />
           </div>
@@ -158,6 +187,11 @@ function AñadirPaciente() {
               placeholder="CI"
               value={nuevoPaciente.CI}
               onChange={e => setNuevoPaciente({ ...nuevoPaciente, CI: e.target.value })}
+              onKeyPress={(e) => {
+                if (nuevoPaciente.CI.length >= 13) {
+                  e.preventDefault();
+                }
+              }}
               required
             />
           </div>
@@ -178,18 +212,18 @@ function AñadirPaciente() {
             </select>
           </div>
           <div className="form-group mb-3">
-            <label>Criterio</label>
+            <label>Criterio de Ingreso</label>
             <select
               className="form-control"
-              value={nuevoPaciente.criterio}
-              onChange={e => setNuevoPaciente({ ...nuevoPaciente, criterio: e.target.value })}
+              value={nuevoPaciente.idCriterioIngreso}
+              onChange={e => setNuevoPaciente({ ...nuevoPaciente, idCriterioIngreso: e.target.value })}
               required
             >
               <option value="">Seleccione un criterio</option>
               {criterios.map(crit => (
-                <option key={crit.idCriterioIngreso} value={`${crit.tipo}-${crit.subtipo}-${crit.estadoIngreso}`}>
-                  {`${crit.tipo}-${crit.subtipo}-${crit.estadoIngreso}`}
-                </option>
+                 <option key={crit.idCriterioIngreso} value={crit.idCriterioIngreso}>
+                 {`${crit.tipo}-${crit.subtipo}-${crit.estadoIngreso}`}
+               </option>
               ))}
             </select>
           </div>
