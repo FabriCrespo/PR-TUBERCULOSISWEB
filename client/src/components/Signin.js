@@ -1,7 +1,7 @@
 /* src/components/Signin.js */
 
 import React, { useState } from "react";
-import './Account.css';
+import './Signin.css';
 
 const Signin = ({ usuario, setUsuario, contrasenia, setContrasenia, handleLogin }) => {
     const [passwordError, setPasswordError] = useState("");

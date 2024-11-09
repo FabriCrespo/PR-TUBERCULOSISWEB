@@ -16,7 +16,7 @@ const Footer = () => {
         <div className='footer-links'>
           <h2 className='footer-links-h blind'>FOOTER MENUS</h2>
           <div className='footer-links-list'>
-            <a href='/' target='_blank' className='footer-links-a'>home</a>
+            <a href='#' target='_blank' className='footer-links-a'>blank</a>
           </div>
         </div>
 
