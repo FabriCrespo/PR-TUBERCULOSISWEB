@@ -30,11 +30,13 @@ label {
 .textarea-input,
 .file-input {
     padding: 12px;
-    border: 1px solid #ccc;
+    border: none;
     border-radius: 8px;
     font-size: 1rem;
     color: #333;
-    background-color: #f9f9f9;
+    background-color: #c7ceff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .select-input:focus,
@@ -91,6 +93,7 @@ label {
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 10px;
+    font-size: 1.2rem;
 }
 
 .transfer-summary h3, .transfer-summary h4 {

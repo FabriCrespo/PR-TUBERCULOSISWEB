@@ -8,18 +8,34 @@ const path = require('path');
 const app = express();
 const PORT = 3001;
 
+app.use(express.urlencoded({ extended: true })); // Para datos URL-encoded
+app.use(express.json());
 
-// Configuración de multer para almacenar archivos
+// Configura dónde se guardarán los archivos
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Carpeta donde se guardarán los archivos
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');  // Directorio donde se guardarán los archivos
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Renombrar archivo
-  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);  // Nombre original del archivo
+  }
 });
 
-const upload = multer({ storage });
+// Limita el tamaño del archivo
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
+
+  
+// Uso del middleware
+app.post('/upload', upload.single('documentoRef'), (req, res) => {
+  if (req.file) {
+    res.send('Archivo subido correctamente');
+  } else {
+    res.status(400).send('No se ha subido el archivo');
+  }
+});
 
 // Middleware
 app.use(cors()); // Permitir solicitudes desde otros dominios
@@ -108,7 +124,7 @@ app.get('/api/admin-data', verifyRole('administrador'), (req, res) => {
 /* ****************************************************** */
 // PACIENTES 
 app.get('/api/pacientes', (req, res) => {
-  const query = `SELECT idPersona, CONCAT(nombres, ' ', IFNULL(primerApellido, ''), ' ', IFNULL(segundoApellido, '')) AS nombreCompleto, CI, fechaNacimiento, sexo
+  const query = `SELECT idPersona, CONCAT(nombres, ' ', IFNULL(primerApellido, ''), ' ', IFNULL(segundoApellido, '')) AS nombreCompleto, CI, fechaNacimiento, sexo, numeroCelular, direccion
                  FROM persona;`; // Se eliminó el filtro por rol
   db.query(query, (error, result) => {
       if (error) {
@@ -153,50 +169,60 @@ app.get('/api/establecimientos', (req, res) => {
 });
 
 
-// Registrar una nueva transferencia con archivo
-app.post('/api/transferencias', upload.single('documentoTransferencia'), (req, res) => {
-  console.log("Datos recibidos:", req.body);
-  
-  const {
-    idEstablecimientoSaludOrigen,
-    persona_idPersona,
-    idEstablecimientoSaludDestino,
-    Motivo,
-    Observacion,
-  } = req.body;
-
-  const imagenReferencia = req.file ? req.file.filename : null; // Guardar el nombre del archivo
-
-  if (!idEstablecimientoSaludOrigen || !persona_idPersona || !idEstablecimientoSaludDestino || !Motivo || !imagenReferencia) {
-    return res.status(400).json({ error: 'Faltan datos obligatorios' });
-  }
-
-  const query = `
-    INSERT INTO transferencia (
-      idEstablecimientoSaludOrigen,
-      idEstablecimientoSaludDestino,
-      idPersona,
-      motivo,
-      observacion,
-      documentoRef,
-      estado,
-      fechaCreacion,
-      fechaActualizacion
-    ) VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NULL)
-  `;
-
-  db.query(
-    query,
-    [idEstablecimientoSaludOrigen, persona_idPersona, idEstablecimientoSaludDestino, Motivo, Observacion, imagenReferencia],
-    (error, result) => {
-      if (error) {
-        return res.status(500).send(error);
-      }
-      res.json({ message: 'Transferencia registrada exitosamente', idTransferencia: result.insertId });
+app.post('/api/transferencias', upload.single('documentoRef'), async (req, res) => {
+  try {
+    // Verifica si el archivo fue recibido
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se ha subido ningún archivo' });
     }
-  );
+
+    // Accede al archivo como buffer
+    const documentoRef = req.file.buffer;
+
+    // Verifica que los campos necesarios estén presentes en el cuerpo de la solicitud
+    const { idEstablecimientoSaludOrigen, persona_idPersona, idEstablecimientoSaludDestino, Motivo, Observacion } = req.body;
+
+    if (!idEstablecimientoSaludOrigen || !persona_idPersona || !idEstablecimientoSaludDestino || !Motivo || !Observacion) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios en la solicitud' });
+    }
+
+    // Guarda la transferencia en la base de datos
+    await db.query('INSERT INTO transferencias SET ?', {
+      idEstablecimientoSaludOrigen,
+      persona_idPersona,
+      idEstablecimientoSaludDestino,
+      Motivo,
+      Observacion,
+      documentoRef  // Guarda el buffer del archivo en el campo `documentoRef`
+    });
+
+    // Responde con éxito
+    res.status(200).json({ message: 'Transferencia registrada exitosamente' });
+  } catch (error) {
+    // Maneja cualquier error en el proceso
+    console.error(error);
+    res.status(500).json({ error: 'Error al guardar la transferencia' });
+  }
 });
 
+
+app.get('/transferencias/:id', async (req, res) => {
+  try {
+      const [rows] = await db.query('SELECT * FROM transferencias WHERE id = ?', [req.params.id]);
+
+      if (rows.length > 0) {
+          const transferencia = rows[0];
+          res.json({
+              ...transferencia,
+              documentoRef: transferencia.documentoRef.toString('base64')  // Convierte el buffer a base64
+          });
+      } else {
+          res.status(404).json({ error: 'Transferencia no encontrada' });
+      }
+  } catch (error) {
+      res.status(500).json({ error: 'Error al obtener la transferencia' });
+  }
+});
 
 
 // Iniciar el servidor
