@@ -2,31 +2,37 @@ const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
 const multer = require("multer");
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json()); // Asegúrate de incluir este middleware
+
+const PORT = 3001;
+
+app.use(express.urlencoded({ extended: true })); // Para datos URL-encoded
+
 
 //conexion a la base de datos----------IMPORTANTE
 
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "root", // 11352871
+  password: "1234", // 11352871
   database: "tuberculosisproyect",
 });
 
 // Configura dónde se guardarán los archivos
-const storage = multer.memoryStorage(); // Usamos memoria para almacenar el archivo en el buffer
+const storage = multer.memoryStorage();  // Usamos memoria para almacenar el archivo en el buffer
 const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // Limitar a 10MB
   fileFilter: (req, file, cb) => {
-    if (file.mimetype !== "application/pdf") {
-      return cb(new Error("Solo se permiten archivos PDF"), false);
+    if (file.mimetype !== 'application/pdf') {
+      return cb(new Error('Solo se permiten archivos PDF'), false);
     }
     cb(null, true);
-  },
+  }
 });
 
 // Uso del middleware
@@ -37,6 +43,7 @@ app.post("/upload", upload.single("documentoRef"), (req, res) => {
     res.status(400).send("No se ha subido el archivo");
   }
 });
+
 
 // Comprobar conexión
 db.connect((err) => {
@@ -667,95 +674,66 @@ const verifyRole = (role) => {
   };
 };
 
-app.post(
-  "/api/transferencias",
-  upload.single("documentoRef"),
-  async (req, res) => {
-    try {
-      // Verifica si el archivo fue recibido
-      if (!req.file) {
-        return res
-          .status(400)
-          .json({ error: "No se ha subido ningún archivo" });
-      }
+app.post('/api/transferencias', upload.single('documentoRef'), async (req, res) => {
+  try {
+    // Verifica si el archivo fue recibido
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se ha subido ningún archivo' });
+    }
 
-      // Accede al archivo como buffer
-      const documentoRef = req.file.buffer;
+    // Accede al archivo como buffer
+    const documentoRef = req.file.buffer;
 
-      // Verifica que los campos necesarios estén presentes en el cuerpo de la solicitud
-      const {
-        idEstablecimientoSaludOrigen,
-        persona_idPersona,
-        idEstablecimientoSaludDestino,
-        Motivo,
-        Observacion,
-      } = req.body;
+    // Verifica que los campos necesarios estén presentes en el cuerpo de la solicitud
+    const { idEstablecimientoSaludOrigen, persona_idPersona, idEstablecimientoSaludDestino, Motivo, Observacion } = req.body;
 
-      if (
-        !idEstablecimientoSaludOrigen ||
-        !persona_idPersona ||
-        !idEstablecimientoSaludDestino ||
-        !Motivo ||
-        !Observacion
-      ) {
-        return res
-          .status(400)
-          .json({ error: "Faltan campos obligatorios en la solicitud" });
-      }
+    if (!idEstablecimientoSaludOrigen || !persona_idPersona || !idEstablecimientoSaludDestino || !Motivo || !Observacion) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios en la solicitud' });
+    }
 
-      // Guarda la transferencia en la base de datos
-      const query = `
+    // Guarda la transferencia en la base de datos
+    const query = `
       INSERT INTO transferencia (idEstablecimientoSaludOrigen, idPersona, idEstablecimientoSaludDestino, motivo, observacion, documentoRef)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
 
-      const values = [
-        idEstablecimientoSaludOrigen,
-        persona_idPersona,
-        idEstablecimientoSaludDestino,
-        Motivo,
-        Observacion,
-        documentoRef,
-      ];
+    const values = [idEstablecimientoSaludOrigen, persona_idPersona, idEstablecimientoSaludDestino, Motivo, Observacion, documentoRef];
 
-      db.query(query, values, (err, result) => {
-        if (err) {
-          console.error("Error al insertar transferencia:", err);
-          return res
-            .status(500)
-            .json({ error: "Error al guardar la transferencia" });
-        }
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error('Error al insertar transferencia:', err);
+        return res.status(500).json({ error: 'Error al guardar la transferencia' });
+      }
 
-        res
-          .status(200)
-          .json({ message: "Transferencia registrada exitosamente" });
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Error al guardar la transferencia" });
-    }
+      res.status(200).json({ message: 'Transferencia registrada exitosamente' });
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al guardar la transferencia' });
   }
-);
+});
 
 // Obtener una transferencia por ID
-app.get("/api/transferencias/:id", async (req, res) => {
+app.get('/api/transferencias/:id', async (req, res) => {
   try {
-    const query = "SELECT * FROM transferencia WHERE idTransferencia = ?";
+    const query = 'SELECT * FROM transferencia WHERE idTransferencia = ?';
     const [rows] = await db.query(query, [req.params.id]);
 
     if (rows.length > 0) {
       const transferencia = rows[0];
       res.json({
         ...transferencia,
-        documentoRef: transferencia.documentoRef.toString("base64"), // Convierte el buffer a base64
+        documentoRef: transferencia.documentoRef.toString('base64')  // Convierte el buffer a base64
       });
     } else {
-      res.status(404).json({ error: "Transferencia no encontrada" });
+      res.status(404).json({ error: 'Transferencia no encontrada' });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener la transferencia" });
+    res.status(500).json({ error: 'Error al obtener la transferencia' });
   }
 });
+
 
 app.get("/api/admin-data", verifyRole("administrador"), (req, res) => {
   res.json({ message: "Datos confidenciales del administrador" });

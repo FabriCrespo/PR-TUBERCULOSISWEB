@@ -200,3 +200,36 @@ label {
 .submit-button:hover {
     background-color: #295f73;
 }
+
+/* Mensaje de éxito y error */
+.status-message {
+    margin-top: 15px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Estilo de mensaje de éxito */
+.status-message.success {
+    color: #2d7a2e;
+    background-color: #e1f7e2;
+    border: 1px solid #a3e1a4;
+}
+
+/* Estilo de mensaje de error */
+.status-message.error {
+    color: #a83232;
+    background-color: #f9dcdc;
+    border: 1px solid #f3a6a6;
+}
+
+/* Icono del mensaje */
+.status-message .icon {
+    font-size: 1.2rem;
+}
+

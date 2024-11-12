@@ -17,6 +17,7 @@ const Transferencia = () => {
     const [establecimientoOrigen, setEstablecimientoOrigen] = useState(null);
     const [establecimientoDestino, setEstablecimientoDestino] = useState(null);
     const [personaSeleccionada, setPersonaSeleccionada] = useState(null);
+    const [statusMessage, setStatusMessage] = useState("");
 
     useEffect(() => {
         fetch('http://localhost:3001/api/establecimientos')
@@ -76,8 +77,12 @@ const Transferencia = () => {
 
             console.log("Respuesta de la API:", response);
             
-            if (!response.ok) {
+            if (response.ok) {
+                setStatusMessage("Registro exitoso");
+                setTimeout(() => window.location.reload(), 5000); // Recarga la página después de 2 segundos
+            } else {
                 const errorText = await response.text();
+                setStatusMessage(`Error al registrar transferencia: ${errorText}`);
                 throw new Error(`Error ${response.status}: ${errorText}`);
             }
 
@@ -170,20 +175,32 @@ const Transferencia = () => {
                             rows="4"
                             className="textarea-input"
                         />
+                        <small>{200 - formData.Observacion.length} caracteres restantes</small>
                     </div>
+
                     <div className="form-group">
                         <label>Documento Transferencia</label>
                         <input
                             type="file"
                             name="documentoRef"
                             onChange={handleChange}
-                            accept=".jpg, .jpeg, .png"
+                            accept=".pdf"
                             className="file-input"
                         />
                     </div>
                     <button type="submit" className="submit-button">Registrar Transferencia</button>
+                                    {/* Mostrar el mensaje debajo del botón */}
+                {statusMessage && (
+                    <div className={`status-message ${statusMessage === "Registro exitoso" ? "success" : "error"}`}>
+                        <span className="icon">{statusMessage === "Registro exitoso" ? "✔️" : "❌"}</span>
+                        {statusMessage}
+                    </div>
+                )}
+
+
                 </form>
-                    
+                
+    
                     {/* Vista de datos seleccionados */}
                     <div className="transfer-summary">
                         <h3>Detalles de la Transferencia</h3>
