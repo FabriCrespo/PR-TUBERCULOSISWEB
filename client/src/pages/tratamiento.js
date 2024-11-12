@@ -58,10 +58,32 @@ const SeguimientoTratamientos = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    if ((name === 'intervaloTiempo' || name === 'cantDosis') && (parseInt(value) <= 0 || isNaN(value))) {
+      alert(`${name === 'intervaloTiempo' ? 'El intervalo de tiempo' : 'La cantidad de dosis'} debe ser un número mayor a 0`);
+      return;
+    }
+
+    if (name === 'fechaFinalizacion' && value) {
+      const fechaInicio = new Date(newTreatment.fechaInicio);
+      const fechaFinalizacion = new Date(value);
+      if (fechaFinalizacion < fechaInicio) {
+        alert('La fecha de finalización no puede ser anterior a la fecha de inicio.');
+        return;
+      }
+    }
+
     setNewTreatment({ ...newTreatment, [name]: value });
   };
 
   const handleAddTreatment = async () => {
+    // Verificar si todos los campos están llenos
+    const { medicamento, fechaInicio, cantDosis, intervaloTiempo } = newTreatment;
+    if (!medicamento || !fechaInicio || !cantDosis || !intervaloTiempo) {
+      alert('Por favor, completa todos los campos antes de agregar el tratamiento.');
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:3001/api/tratamientos`, {
         method: 'POST',
@@ -130,7 +152,6 @@ const SeguimientoTratamientos = () => {
             Sexo: {selectedPerson.sexo} <br />
             Establecimiento: {selectedPerson.nombreEstablecimiento} <br />
             Criterio de Ingreso: {selectedPerson.criterioIngreso} <br />
-            
           </p>
 
           <h4>Tratamientos:</h4>
