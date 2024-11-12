@@ -91,7 +91,6 @@ const Transferencia = () => {
     
 
     return (
-        <Layout>
             <div className="transfer-container">
                 <h2>Formulario de Transferencia</h2>
                 <div className="transfer-content">
@@ -213,7 +212,6 @@ const Transferencia = () => {
                     </div>
                 </div>
             </div>
-        </Layout>
     );
 };
 
