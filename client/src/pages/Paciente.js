@@ -52,6 +52,11 @@ function Paciente() {
   return (
     <div className="container mt-4">
       <h2 className="text-center mb-4">Lista de Pacientes</h2>
+      <div className="d-flex justify-content-center mt-4">
+        <Link to="/añadir-paciente" className="btn btn-primary">
+          <i className="bi bi-plus-lg me-1"></i>Añadir Paciente
+        </Link>
+      </div>
 
       {/* Campo de búsqueda alineado a la izquierda */}
       <div className="mb-3" style={{ maxWidth: '300px' }}>
@@ -110,11 +115,7 @@ function Paciente() {
         </tbody>
       </table>
 
-      <div className="d-flex justify-content-center mt-4">
-        <Link to="/añadir-paciente" className="btn btn-primary">
-          <i className="bi bi-plus-lg me-1"></i>Añadir Paciente
-        </Link>
-      </div>
+     
     </div>
   );
 }
