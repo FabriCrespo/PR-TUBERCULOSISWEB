@@ -503,3 +503,28 @@ app.get('/api/admin-data', verifyRole('administrador'), (req, res) => {
   res.json({ message: 'Datos confidenciales del administrador' });
 });
 
+
+// Ruta para obtener los establecimientos(LISTA) de salud con sus atributos
+app.get('/api/establecimientosLista', (req, res) => {
+  const query = `
+  SELECT 
+    e.idEstablecimientoSalud,
+    e.nombreEstablecimiento,
+    e.telefono,
+    e.clasificacion,
+    s.nombreSede,
+    r.nombreRedSalud
+  FROM establecimientosalud e
+  JOIN redsalud r ON e.idRedSalud = r.idRedSalud
+  JOIN sede s ON r.idSede = s.idSede
+  WHERE e.estado = 1;
+`;
+
+  db.query(query, (err, result) => {
+    if (err) {
+      console.error('Error obteniendo los establecimientos:', err);
+      return res.status(500).json({ error: 'Error en el servidor' });
+    }
+    res.json(result);
+  });
+});

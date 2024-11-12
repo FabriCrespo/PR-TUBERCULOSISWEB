@@ -28,7 +28,7 @@ const Header = () => {
                 <Link className="nav-link" to="/lista-personal-salud">Personal Salud</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/registrar-establecimiento">Registrar Establecimiento</Link>
+                <Link className="nav-link" to="/registrar-establecimiento">Establecimientos</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/seguimiento-tratamientos">Seguimiento Tratamientos</Link> 

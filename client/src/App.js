@@ -13,6 +13,7 @@ import Tratamiento from './pages/tratamiento';
 import Paciente from './pages/Paciente';
 import AñadirPaciente from './pages/AñadirPaciente';
 import ActualizarPaciente from './pages/ActualizarPaciente';
+import ListaEstablecimientos from './pages/ListaEstablecimientos';
 
 
 
@@ -35,6 +36,7 @@ function App() {
           <Route path="/lista-pacientes" element={<Paciente />} />
           <Route path="/añadir-paciente" element={<AñadirPaciente />} /> 
           <Route path="/actualizar-paciente/:id" element={<ActualizarPaciente />} />
+          <Route path="/lista-establecimientos" element={<ListaEstablecimientos />} />
 
         </Routes>
       </Layout>

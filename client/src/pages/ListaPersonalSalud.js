@@ -10,7 +10,7 @@ const ListaPersonalSalud = () => {
   const obtenerPersonalSalud = async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/personalSalud');
-      setPersonalSalud(response.data);  // Guardar los datos obtenidos en el estado
+      setPersonalSalud(response.data); // Guardar los datos obtenidos en el estado
     } catch (error) {
       console.error('Error al obtener el personal de salud:', error);
     }
@@ -24,6 +24,18 @@ const ListaPersonalSalud = () => {
   return (
     <div className="container mt-5">
       <h1 className="text-center mb-4">Lista de Personal de Salud</h1>
+      
+     
+      <div className="d-flex justify-content-center mb-4">
+        <button className="btn btn-primary me-2" onClick={() => navigate('/registrar-personal-salud')}>
+          Añadir Nuevo Personal de Salud
+        </button>
+        <button className="btn btn-primary" onClick={() => navigate('/actualizar-personal-salud')}>
+          Actualizar Personal de Salud
+        </button>
+      </div>
+
+      
       <table className="table table-bordered">
         <thead>
           <tr>
@@ -42,15 +54,6 @@ const ListaPersonalSalud = () => {
           ))}
         </tbody>
       </table>
-      <div className="d-flex justify-content-center mt-4">
-      <button className="btn btn-primary me-2" onClick={() => navigate('/registrar-personal-salud')}>
-        Añadir Nuevo Personal de Salud
-      </button>
-      <button className="btn btn-primary" onClick={() => navigate('/actualizar-personal-salud')}>
-        Actualizar Personal de Salud
-      </button>
-    </div>
-
     </div>
   );
 };

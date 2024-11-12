@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 const RegistrarEstablecimiento = () => {
   const [selectedSede, setSelectedSede] = useState('');
@@ -8,8 +10,10 @@ const RegistrarEstablecimiento = () => {
   const [redesSalud, setRedesSalud] = useState([]);
   const [nuevaRedSalud, setNuevaRedSalud] = useState('');
   const [clasificacion, setClasificacion] = useState('');
-  const [telefono, setTelefono] = useState(''); // Estado para el teléfono
+  const [telefono, setTelefono] = useState('');
+  const [nombreEstablecimiento, setNombreEstablecimiento] = useState(''); // Estado para el nombre
 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSedes = async () => {
@@ -58,13 +62,18 @@ const RegistrarEstablecimiento = () => {
     setClasificacion(event.target.value);
   };
 
+  const handleNombreEstablecimientoChange = (event) => {
+    const inputValue = event.target.value;
+    // Permitir solo letras, espacios y evitar números o caracteres especiales
+    if (/^[a-zA-Z\s]*$/.test(inputValue)) {
+      setNombreEstablecimiento(inputValue);
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
-    const nombreEstablecimiento = event.target[0].value;
-    const telefono = event.target[1].value;
     const selectedRedSaludId = selectedRedSalud;
-  
+
     if (selectedRedSaludId && selectedRedSaludId !== 'nueva') {
       try {
         const response = await axios.post('http://localhost:3001/api/establecimientoSalud', {
@@ -76,7 +85,6 @@ const RegistrarEstablecimiento = () => {
         alert(response.data.message); // Mensaje de éxito
       } catch (error) {
         if (error.response && error.response.data.error) {
-          // Si hay un error relacionado con el establecimiento ya existente
           alert(error.response.data.error);
         } else {
           console.error('Error registrando el establecimiento:', error);
@@ -85,9 +93,7 @@ const RegistrarEstablecimiento = () => {
       }
     }
   };
-  
 
-  // Función para crear la nueva red de salud
   const handleCreateRedSalud = async () => {
     if (!nuevaRedSalud) {
       alert('Por favor, ingrese el nombre de la nueva red de salud.');
@@ -116,26 +122,32 @@ const RegistrarEstablecimiento = () => {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label>* Ingrese Nombre Del Establecimiento</label>
-            <input type="text" className="form-control" placeholder="Nombre" required />
-          </div>
-          <div className="row mb-3">
-          <div className="col-md-6">
-            <label>* Ingrese Número de Teléfono</label>
             <input
-              type="tel"
+              type="text"
               className="form-control"
-              placeholder="Teléfono"
+              placeholder="Nombre"
+              value={nombreEstablecimiento}
+              onChange={handleNombreEstablecimientoChange}
               required
-              value={telefono} // Aquí debes agregar un estado para manejar el valor
-              onChange={(e) => {
-                const inputValue = e.target.value;
-                // Solo permitir dígitos
-                if (/^\d*$/.test(inputValue)) {
-                  setTelefono(inputValue); // Aquí necesitas definir el estado de telefono
-                }
-              }}
             />
           </div>
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <label>* Ingrese Número de Teléfono</label>
+              <input
+                type="tel"
+                className="form-control"
+                placeholder="Teléfono"
+                required
+                value={telefono}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  if (/^\d*$/.test(inputValue)) {
+                    setTelefono(inputValue);
+                  }
+                }}
+              />
+            </div>
             <div className="col-md-6">
               <label>* SEDE</label>
               <select className="form-control" value={selectedSede} onChange={handleSedeChange}>
@@ -170,7 +182,6 @@ const RegistrarEstablecimiento = () => {
                     onChange={handleNuevaRedSaludChange}
                     required
                   />
-                  {/* Botón para confirmar la creación de la nueva red de salud */}
                   <button type="button" className="btn btn-success mt-2" onClick={handleCreateRedSalud}>
                     Crear Nueva Red de Salud
                   </button>
@@ -190,10 +201,19 @@ const RegistrarEstablecimiento = () => {
             </div>
           </div>
           <div className="d-flex justify-content-center mt-4">
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary me-3">
               Registrar
             </button>
+
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => navigate('/lista-establecimientos')}
+            >
+              Ver Lista de Establecimientos
+            </button>
           </div>
+
         </form>
       </div>
     </div>

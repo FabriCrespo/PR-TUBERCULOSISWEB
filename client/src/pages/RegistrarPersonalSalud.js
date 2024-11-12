@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { useNavigate } from 'react-router-dom'; 
 
 const RegistrarPersonalSalud = () => {
-  const navigate = useNavigate(); // Inicializa useNavigate
+  const navigate = useNavigate(); 
   const [formData, setFormData] = useState({
     nombres: '',
     primerApellido: '',
@@ -56,6 +56,7 @@ const RegistrarPersonalSalud = () => {
       const contrasenia = CI;
       alert(`Usuario: ${usuario}\nContraseña: ${contrasenia}`);
       alert('Personal de salud registrado exitosamente');
+      navigate('/lista-personal-salud');
     } catch (error) {
       if (error.response && error.response.data.error) {
         setError(error.response.data.error);
@@ -66,7 +67,6 @@ const RegistrarPersonalSalud = () => {
       setLoading(false);
     }
   };
-
 
   const handleCancel = () => {
     navigate('/lista-personal-salud');
@@ -126,7 +126,8 @@ const RegistrarPersonalSalud = () => {
               value={formData.CI}
               onChange={handleChange}
               required
-              pattern="\d+"
+              maxLength="20" 
+              pattern="^\d{1,20}$" 
             />
           </div>
 
@@ -140,7 +141,8 @@ const RegistrarPersonalSalud = () => {
               value={formData.numeroCelular}
               onChange={handleChange}
               required
-              pattern="\d+"
+              pattern="^[67][0-9]{7}$"
+              title="El número de celular debe tener 8 dígitos y comenzar con 6 o 7."
             />
           </div>
 
