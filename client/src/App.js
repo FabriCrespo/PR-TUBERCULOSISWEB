@@ -14,6 +14,7 @@ import Paciente from './pages/Paciente';
 import AñadirPaciente from './pages/AñadirPaciente';
 import ActualizarPaciente from './pages/ActualizarPaciente';
 import Transferencia from './pages/Transferencia';
+import VideoList from './pages/VideoList';
 
 
 
@@ -36,6 +37,7 @@ function App() {
           <Route path="/añadir-paciente" element={<AñadirPaciente />} /> 
           <Route path="/actualizar-paciente/:id" element={<ActualizarPaciente />} />
           <Route path="/transferencia" element={<Transferencia />} />
+          <Route path="/videos" element={<VideoList />} />
 
         </Routes>
       </Layout>

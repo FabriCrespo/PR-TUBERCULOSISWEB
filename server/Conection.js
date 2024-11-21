@@ -1,11 +1,16 @@
 const express = require("express");
 const mysql = require("mysql2");
+const bodyParser = require("body-parser");
 const cors = require("cors");
 const multer = require("multer");
 const path = require('path');
+const ffmpeg = require("fluent-ffmpeg");
+const fs = require("fs");
 
 const app = express();
 app.use(cors());
+app.use(bodyParser.json({ limit: "1000mb" }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()); // Asegúrate de incluir este middleware
 
 const PORT = 3001;
@@ -18,8 +23,8 @@ app.use(express.urlencoded({ extended: true })); // Para datos URL-encoded
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "1234", // 11352871
-  database: "tuberculosisproyect",
+  password: "estucheS12", // 11352871
+  database: "tuberculosis",
 });
 
 // Configura dónde se guardarán los archivos
@@ -114,6 +119,104 @@ app.get("/api/redesSalud/:idSede", (req, res) => {
     res.json(result);
   });
 });
+
+// Endpoint para guardar un video
+app.post("/api/videos", async (req, res) => {
+  const { nombre, descripcion, video_base64, persona_idPersona } = req.body;
+  // Validación de campos
+  if (!nombre || !descripcion || !video_base64 || !persona_idPersona) {
+    return res.status(400).json({ error: "Todos los campos son obligatorios." });
+  }
+
+  const query = `
+    INSERT INTO video (nombre, descripcion, video_base64, persona_idPersona, fecha_subida)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  const fecha_subida = new Date().toISOString().slice(0, 19).replace('T', ' '); 
+  try {
+    db.query(
+      query,
+      [nombre, descripcion, video_base64, persona_idPersona, fecha_subida],
+      (error, results) => {
+        if (error) {
+          console.error("Error al insertar en la base de datos:", error);
+          res.status(500).json({ error: "Error al guardar el video en la base de datos." });
+        } else {
+          res.status(200).json({
+            message: "Video guardado correctamente.",
+            videoId: results.insertId,
+          });
+        }
+      }
+    );
+  } catch (err) {
+    console.error("Error en el servidor:", err);
+    res.status(500).json({ error: err });
+  }
+});
+// Ruta para obtener los videos y convertir formato
+app.get("/api/videos", (req, res) => {
+  const query = `
+    SELECT id, nombre, descripcion, video_base64, fecha_subida
+    FROM video
+  `;
+
+  db.query(query, async (err, result) => {
+    if (err) {
+      console.error("Error obteniendo los videos:", err);
+      return res.status(500).json({ error: "Error en el servidor" });
+    }
+
+    const videos = await Promise.all(
+      result.map(async (video) => {
+        // Convertir base64 a archivo temporal MOV
+        const movPath = path.join(__dirname, `${video.nombre}`);
+        const mp4Path = path.join(__dirname, `${video.nombre}.mp4`);
+        const buffer = Buffer.from(video.video_base64, "base64");
+
+        fs.writeFileSync(movPath, buffer);
+
+        try {
+          // Convertir MOV a MP4
+          await new Promise((resolve, reject) => {
+            ffmpeg(movPath)
+              .output(mp4Path)
+              .on("end", resolve)
+              .on("error", reject)
+              .run();
+          });
+
+          // Leer MP4 convertido y codificar como base64
+          const mp4Buffer = fs.readFileSync(mp4Path);
+          const base64Mp4 = `data:video/mp4;base64,${mp4Buffer.toString(
+            "base64"
+          )}`;
+
+          // Eliminar archivos temporales
+          fs.unlinkSync(movPath);
+          fs.unlinkSync(mp4Path);
+
+          return {
+            id: video.id, // Cambiado de idVideo a id
+            name: video.nombre.replace(".mov", ".mp4"),
+            description: video.descripcion,
+            base64: base64Mp4,
+            uploadDate: new Date(video.fecha_subida).toISOString(),
+          };
+        } catch (error) {
+          console.error("Error al convertir video:", error);
+          return null; // O manejar errores específicos
+        }
+      })
+    );
+
+    // Filtrar videos fallidos
+    const validVideos = videos.filter((video) => video !== null);
+
+    res.json(validVideos);
+  });
+});
+
 
 // Ruta para insertar establecimiento de salud---------------------------------------------
 app.post("/api/establecimientoSalud", (req, res) => {
@@ -413,6 +516,25 @@ app.post("/api/tratamientos", (req, res) => {
   );
 });
 
+// Ruta para obtener los datos de un paciente por su id
+app.get('/api/paciente/:id', (req, res) => {
+  const pacienteId = req.params.id;
+
+  const query = 'SELECT * FROM persona WHERE idPersona = ?';
+  db.query(query, [pacienteId], (err, result) => {
+    if (err) {
+      console.error('Error en la consulta:', err);  // Imprime el error en la consola
+      return res.status(500).send({ message: 'Error en el servidor' });
+    }
+    
+    if (result.length > 0) {
+      res.send(result[0]);  // Enviar solo el primer resultado
+    } else {
+      res.status(404).send({ message: 'Paciente no encontrado' });
+    }
+  });
+});
+
 // Ruta para obtener la lista de pacientes
 app.get("/api/pacientes", (req, res) => {
   const query = `
@@ -593,6 +715,26 @@ app.put("/api/pacientes/:id", (req, res) => {
   );
 });
 
+
+// Ruta para obtener los datos de un establecimiento de salud por su id
+app.get('/api/establecimiento/:id', (req, res) => {
+  const establecimientosaludId = req.params.id;
+
+  const query = 'SELECT * FROM establecimientosalud WHERE idEstablecimeintoSalud = ?';
+  db.query(query, [establecimientosaludId], (err, result) => {
+    if (err) {
+      console.error('Error en la consulta:', err);  // Imprime el error en la consola
+      return res.status(500).send({ message: 'Error en el servidor' });
+    }
+    
+    if (result.length > 0) {
+      res.send(result[0]);  // Enviar solo el primer resultado
+    } else {
+      res.status(404).send({ message: 'Paciente no encontrado' });
+    }
+  });
+});
+
 //ruta para colocar el estado de 1 persona en 0 -----------------------------------------------------------------------------------------------------------------------------
 app.put("/api/pacientesDelete/:id/estado", (req, res) => {
   const { id } = req.params;
@@ -673,6 +815,37 @@ const verifyRole = (role) => {
     });
   };
 };
+
+// Ruta para obtener todas las personas
+app.get('/api/personas', (req, res) => {
+  const query = 'SELECT * FROM persona';
+  
+  db.query(query, (err, result) => {
+    if (err) {
+      console.error('Error al ejecutar la consulta', err);
+      return res.status(500).send({ message: 'Error en el servidor' });
+    }
+    if (result.length === 0) {
+      return res.status(404).send({ message: 'No se encontraron personas' });
+    }
+    res.json(result);
+  });
+});
+
+app.post('/api/loginmobile', (req, res) => {
+  const { ci } = req.body;
+  const query = `SELECT * FROM persona WHERE CI = ?`;
+  db.query(query, [ci], (err, result) => {
+      if (err) {
+          return res.status(500).send({ error: 'Database error' });
+      }
+      if (result.length > 0) {
+          res.send({ message: 'Login successful', user: result[0] });
+      } else {
+          res.send({ message: 'Invalid carnet de identidad' });
+      }
+  });
+});
 
 app.post('/api/transferencias', upload.single('documentoRef'), async (req, res) => {
   try {
