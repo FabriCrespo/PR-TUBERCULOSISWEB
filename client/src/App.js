@@ -14,12 +14,7 @@ import Paciente from './pages/Paciente';
 import AñadirPaciente from './pages/AñadirPaciente';
 import ActualizarPaciente from './pages/ActualizarPaciente';
 import Transferencia from './pages/Transferencia';
-
-
-
-
-
-
+import ListasTransferencias from './pages/ListaTransferencias';
 
 function App() {
   return (
@@ -36,6 +31,7 @@ function App() {
           <Route path="/añadir-paciente" element={<AñadirPaciente />} /> 
           <Route path="/actualizar-paciente/:id" element={<ActualizarPaciente />} />
           <Route path="/transferencia" element={<Transferencia />} />
+          <Route path="/lista-transferencias" element={<ListasTransferencias />} />
 
         </Routes>
       </Layout>

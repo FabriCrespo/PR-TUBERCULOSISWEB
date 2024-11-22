@@ -19,7 +19,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "1234", // 11352871
-  database: "tuberculosisproyect",
+  database: "tuberculosisproyectlleno",
 });
 
 // Configura dónde se guardarán los archivos
@@ -691,28 +691,73 @@ app.post('/api/transferencias', upload.single('documentoRef'), async (req, res) 
       return res.status(400).json({ error: 'Faltan campos obligatorios en la solicitud' });
     }
 
-    // Guarda la transferencia en la base de datos
-    const query = `
-      INSERT INTO transferencia (idEstablecimientoSaludOrigen, idPersona, idEstablecimientoSaludDestino, motivo, observacion, documentoRef)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-
-    const values = [idEstablecimientoSaludOrigen, persona_idPersona, idEstablecimientoSaludDestino, Motivo, Observacion, documentoRef];
-
-    db.query(query, values, (err, result) => {
+    // Inicia una transacción para garantizar la consistencia de los datos
+    db.beginTransaction((err) => {
       if (err) {
-        console.error('Error al insertar transferencia:', err);
+        console.error('Error al iniciar transacción:', err);
         return res.status(500).json({ error: 'Error al guardar la transferencia' });
       }
 
-      res.status(200).json({ message: 'Transferencia registrada exitosamente' });
-    });
+      // Guarda la transferencia en la base de datos
+      const insertQuery = `
+        INSERT INTO transferencia (idEstablecimientoSaludOrigen, idPersona, idEstablecimientoSaludDestino, motivo, observacion, documentoRef)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+      const insertValues = [
+        idEstablecimientoSaludOrigen,
+        persona_idPersona,
+        idEstablecimientoSaludDestino,
+        Motivo,
+        Observacion,
+        documentoRef,
+      ];
 
+      db.query(insertQuery, insertValues, (err, result) => {
+        if (err) {
+          console.error('Error al insertar transferencia:', err);
+          return db.rollback(() => {
+            res.status(500).json({ error: 'Error al guardar la transferencia' });
+          });
+        }
+
+        // Actualiza el establecimiento del paciente
+        const updateQuery = `
+          UPDATE persona
+          SET EstablecimientoSalud_idEstablecimientoSalud = ?
+          WHERE idPersona = ?
+        `;
+        const updateValues = [idEstablecimientoSaludDestino, persona_idPersona];
+
+        db.query(updateQuery, updateValues, (err, updateResult) => {
+          if (err) {
+            console.error('Error al actualizar el establecimiento del paciente:', err);
+            return db.rollback(() => {
+              res.status(500).json({ error: 'Error al actualizar el establecimiento del paciente' });
+            });
+          }
+
+          // Confirma la transacción
+          db.commit((err) => {
+            if (err) {
+              console.error('Error al confirmar la transacción:', err);
+              return db.rollback(() => {
+                res.status(500).json({ error: 'Error al guardar la transferencia' });
+              });
+            }
+
+            res.status(200).json({
+              message: 'Transferencia registrada exitosamente y paciente actualizado',
+            });
+          });
+        });
+      });
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al guardar la transferencia' });
   }
 });
+
 
 // Obtener una transferencia por ID
 app.get('/api/transferencias/:id', async (req, res) => {
@@ -731,6 +776,31 @@ app.get('/api/transferencias/:id', async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener la transferencia' });
+  }
+});
+
+
+app.get('/api/gettransferencias', async (req, res) => {
+  try {
+    const query = `SELECT 
+t.idTransferencia  , e.nombreEstablecimiento as establecimientoOrigen, es.nombreEstablecimiento as establecimientoDestino, 
+CONCAT(p.nombres, ' ', p.primerApellido, ' ', IFNULL(p.segundoApellido, '')) AS nombreCompleto, 
+t.motivo, t.observacion, t.documentoRef
+FROM transferencia t
+INNER JOIN establecimientosalud e ON t.idEstablecimientoSaludOrigen = e.idEstablecimientoSalud
+INNER JOIN establecimientosalud es ON t.idEstablecimientoSaludDestino = es.idEstablecimientoSalud
+INNER JOIN persona p ON t.idPersona = p.idPersona
+`;
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error('Error al obtener transferencias:', err);
+        return res.status(500).json({ error: 'Error al obtener transferencias' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error del servidor' });
   }
 });
 

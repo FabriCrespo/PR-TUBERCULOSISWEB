@@ -1,6 +1,7 @@
 import Layout from "../components/Layout";
 import React, { useState, useEffect } from "react";
 import './Transferencia.css';
+import { useNavigate } from "react-router-dom";
 
 
 const Transferencia = () => {
@@ -31,13 +32,14 @@ const Transferencia = () => {
             .catch(error => console.error('Error fetching pacientes:', error));
             
     }, []);
-
     const handleChange = (e) => {
         const { name, value, files } = e.target;
+    
         if (name === "documentoRef") {
             setFormData({ ...formData, [name]: files[0] });
         } else {
             setFormData({ ...formData, [name]: value });
+    
             if (name === "idEstablecimientoSaludOrigen") {
                 const selectedEst = establecimientos.find(est => est.id.toString() === value.toString());
                 setEstablecimientoOrigen(selectedEst);
@@ -47,9 +49,22 @@ const Transferencia = () => {
             } else if (name === "persona_idPersona") {
                 const selectedPersona = personas.find(persona => persona.idPersona.toString() === value.toString());
                 setPersonaSeleccionada(selectedPersona);
+    
+                if (selectedPersona) {
+                    // Actualizar el establecimiento de origen con el ID del establecimiento asociado a la persona seleccionada
+                    const personaEstablecimiento = establecimientos.find(est => est.nombre === selectedPersona.nombreEstablecimiento);
+                    if (personaEstablecimiento) {
+                        setFormData(prevFormData => ({
+                            ...prevFormData,
+                            idEstablecimientoSaludOrigen: personaEstablecimiento.id.toString(),
+                        }));
+                        setEstablecimientoOrigen(personaEstablecimiento);
+                    }
+                }
             }
         }
     };
+        
 
     const handleSubmit = async (e) => {
         e.preventDefault();    
@@ -92,6 +107,11 @@ const Transferencia = () => {
             console.error("Error al registrar transferencia:", error);
         }
     };
+    const navigate = useNavigate();
+
+    const handleRedirect = () => {
+        navigate("/lista-transferencias");
+      };
     
     
 
@@ -100,6 +120,23 @@ const Transferencia = () => {
                 <h2>Formulario de Transferencia</h2>
                 <div className="transfer-content">
                 <form onSubmit={handleSubmit} className="transfer-form">
+                <div className="form-group">
+                        <label>Persona</label>
+                        <select
+                            name="persona_idPersona"
+                            value={formData.persona_idPersona}
+                            onChange={handleChange}
+                            required
+                            className="select-input"
+                        >
+                            <option value="">Selecciona una persona</option>
+                            {personas.map(persona => (
+                                <option key={persona.idPersona} value={persona.idPersona}>
+                                    {persona.nombreCompleto}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="form-group">
                         <label>Establecimiento de Origen</label>
                         <select
@@ -130,23 +167,7 @@ const Transferencia = () => {
                             ))}
                         </select>
                     </div>
-                    <div className="form-group">
-                        <label>Persona</label>
-                        <select
-                            name="persona_idPersona"
-                            value={formData.persona_idPersona}
-                            onChange={handleChange}
-                            required
-                            className="select-input"
-                        >
-                            <option value="">Selecciona una persona</option>
-                            {personas.map(persona => (
-                                <option key={persona.idPersona} value={persona.idPersona}>
-                                    {persona.nombreCompleto}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    
                     <div className="form-group">
                         <label>Motivo</label>
                         <select
@@ -196,7 +217,10 @@ const Transferencia = () => {
                         {statusMessage}
                     </div>
                 )}
-
+                
+                <button type="button" className="submit-button" onClick={handleRedirect}>
+                    Ver Transferencias
+                </button>
 
                 </form>
                 
@@ -204,6 +228,15 @@ const Transferencia = () => {
                     {/* Vista de datos seleccionados */}
                     <div className="transfer-summary">
                         <h3>Detalles de la Transferencia</h3>
+                        <div>
+                            <h4>Paciente</h4>
+                            <p>Nombre completo: {personaSeleccionada?.nombreCompleto || 'N/A'}</p>
+                            <p>Fecha de Nacimiento: {personaSeleccionada?.fechaNacimiento ? new Date(personaSeleccionada.fechaNacimiento).toLocaleDateString() : 'N/A'}</p>
+                            <p>Sexo: {personaSeleccionada?.sexo || 'N/A'}</p>
+                            <p>CI: {personaSeleccionada?.CI || 'N/A'}</p>
+                            <p>Numero de Celular: {personaSeleccionada?.numeroCelular || 'N/A'}</p>
+                            <p>Direccion: {personaSeleccionada?.direccion || 'N/A'}</p>
+                        </div>
                         <div>   
                             <h4>Establecimiento de Origen</h4>
                             <p>Nombre: {establecimientoOrigen?.nombre || 'N/A'}</p>
@@ -216,15 +249,7 @@ const Transferencia = () => {
                             <p>Clasificación: {establecimientoDestino?.clasificacion || 'N/A'}</p>
                             <p>Telefono: {establecimientoDestino?.telefono || 'N/A'}</p>
                         </div>
-                        <div>
-                            <h4>Paciente</h4>
-                            <p>Nombre completo: {personaSeleccionada?.nombreCompleto || 'N/A'}</p>
-                            <p>Fecha de Nacimiento: {personaSeleccionada?.fechaNacimiento ? new Date(personaSeleccionada.fechaNacimiento).toLocaleDateString() : 'N/A'}</p>
-                            <p>Sexo: {personaSeleccionada?.sexo || 'N/A'}</p>
-                            <p>CI: {personaSeleccionada?.CI || 'N/A'}</p>
-                            <p>Numero de Celular: {personaSeleccionada?.numeroCelular || 'N/A'}</p>
-                            <p>Direccion: {personaSeleccionada?.direccion || 'N/A'}</p>
-                        </div>
+                        
 
                     </div>
                 </div>
