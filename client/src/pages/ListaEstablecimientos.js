@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
 
 const ListaEstablecimientos = () => {
   const [establecimientos, setEstablecimientos] = useState([]);
@@ -23,43 +24,45 @@ const ListaEstablecimientos = () => {
   }, []);
 
   return (
-    <div className="container mt-5">
-      {error && <div className="alert alert-danger">{error}</div>}
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Lista de Establecimientos Registrados</h2>
-        <button className="btn btn-secondary" onClick={() => navigate(-1)}>
-          Atrás
-        </button>
-      </div>
-      <table className="table table-striped mt-3">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Teléfono</th>
-            <th>Nivel E.S.</th>
-            <th>Sede</th>
-            <th>Red de Salud</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.isArray(establecimientos) && establecimientos.length > 0 ? (
-            establecimientos.map((establecimiento) => (
-              <tr key={establecimiento.idEstablecimientoSalud}>
-                <td>{establecimiento.nombreEstablecimiento}</td>
-                <td>{establecimiento.telefono}</td>
-                <td>{establecimiento.clasificacion}</td>
-                <td>{establecimiento.nombreSede}</td>
-                <td>{establecimiento.nombreRedSalud}</td>
-              </tr>
-            ))
-          ) : (
+    <Layout>
+      <div className="container mt-5">
+        {error && <div className="alert alert-danger">{error}</div>}
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2>Lista de Establecimientos Registrados</h2>
+          <button className="btn btn-secondary" onClick={() => navigate(-1)}>
+            Atrás
+          </button>
+        </div>
+        <table className="table table-striped mt-3">
+          <thead>
             <tr>
-              <td colSpan="5">No se encontraron establecimientos</td>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Nivel E.S.</th>
+              <th>Sede</th>
+              <th>Red de Salud</th>
             </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {Array.isArray(establecimientos) && establecimientos.length > 0 ? (
+              establecimientos.map((establecimiento) => (
+                <tr key={establecimiento.idEstablecimientoSalud}>
+                  <td>{establecimiento.nombreEstablecimiento}</td>
+                  <td>{establecimiento.telefono}</td>
+                  <td>{establecimiento.clasificacion}</td>
+                  <td>{establecimiento.nombreSede}</td>
+                  <td>{establecimiento.nombreRedSalud}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5">No se encontraron establecimientos</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </Layout>
   );
 };
 

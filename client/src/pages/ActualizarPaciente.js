@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import Layout from '../components/LayoutPersonalSalud';
 
 function ActualizarPaciente() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ function ActualizarPaciente() {
 
     const obtenerEstablecimientos = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/establecimientos');
+        const response = await axios.get('http://localhost:3001/api/establecimientosa');
         setEstablecimientos(response.data);
       } catch (error) {
         console.error('Error al obtener los establecimientos:', error);
@@ -102,155 +103,191 @@ function ActualizarPaciente() {
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="text-center mb-4">Actualizar Paciente</h2>
+    <Layout>
+      <div className="container mt-4">
+        <h2 className="text-center mb-4">Actualizar Paciente</h2>
 
-      <div className="card p-4">
-        <form onSubmit={actualizarPaciente}>
-          <div className="form-group mb-3">
-            <label>Nombres</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Nombres"
-              value={paciente.nombres}
-              onChange={e => setPaciente({ ...paciente, nombres: e.target.value })}
-              onKeyPress={validateTextInput}
-              required
-            />
-          </div>
-          <div className="form-group mb-3">
-            <label>Primer Apellido</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Primer Apellido"
-              value={paciente.primerApellido}
-              onChange={e => setPaciente({ ...paciente, primerApellido: e.target.value })}
-              onKeyPress={validateTextInput}
-              required
-            />
-          </div>
-          <div className="form-group mb-3">
-            <label>Segundo Apellido</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Segundo Apellido"
-              value={paciente.segundoApellido}
-              onChange={e => setPaciente({ ...paciente, segundoApellido: e.target.value })}
-              onKeyPress={validateTextInput}
-            />
-          </div>
-          <div className="form-group mb-3">
-            <label>Celular</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Celular"
-              value={paciente.numeroCelular}
-              onChange={e => setPaciente({ ...paciente, numeroCelular: e.target.value })}
-              onKeyPress={validatePhoneInput}
-              required
-            />
-          </div>
-          <div className="form-group mb-3">
-            <label>Fecha de Nacimiento</label>
-            <input
-              type="date"
-              className="form-control"
-              value={paciente.fechaNacimiento}
-              onChange={e => setPaciente({ ...paciente, fechaNacimiento: e.target.value })}
-              required
-            />
-          </div>
-          <div className="form-group mb-3">
-            <label>Sexo</label>
-            <select
-              className="form-control"
-              value={paciente.sexo}
-              onChange={e => setPaciente({ ...paciente, sexo: e.target.value })}
-              required
-            >
-              <option value="">Seleccione</option>
-              <option value="Femenino">Femenino</option>
-              <option value="Masculino">Masculino</option>
-            </select>
-          </div>
-          <div className="form-group mb-3">
-            <label>Dirección</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Dirección"
-              value={paciente.direccion}
-              onChange={e => setPaciente({ ...paciente, direccion: e.target.value })}
-            />
-          </div>
-          <div className="form-group mb-3">
-            <label>CI</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="CI"
-              value={paciente.CI}
-              onChange={e => setPaciente({ ...paciente, CI: e.target.value })}
-              onKeyPress={(e) => {
-                if (paciente.CI.length >= 13) {
-                  e.preventDefault();
-                }
-              }}
-              required
-            />
-          </div>
-          <div className="form-group mb-3">
-            <label>Establecimiento</label>
-            <select
-              className="form-control"
-              value={paciente.EstablecimientoSalud_idEstablecimientoSalud}
-              onChange={e => setPaciente({ ...paciente, EstablecimientoSalud_idEstablecimientoSalud: e.target.value })}
-              required
-            >
-              <option value="">Seleccione un establecimiento</option>
-              {establecimientos.map(est => (
-                <option key={est.idEstablecimientoSalud} value={est.idEstablecimientoSalud}>
-                  {est.nombreEstablecimiento}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group mb-3">
-            <label>Criterio de Ingreso</label>
-            <select
-              className="form-control"
-              value={paciente.idCriterioIngreso}
-              onChange={e => setPaciente({ ...paciente, idCriterioIngreso: e.target.value })}
-              required
-            >
-              <option value="">Seleccione un criterio</option>
-              {criterios.map(crit => (
-                <option key={crit.idCriterioIngreso} value={crit.idCriterioIngreso}>
-                  {`${crit.tipo}-${crit.subtipo}-${crit.estadoIngreso}`}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="card p-4">
+          <form onSubmit={actualizarPaciente}>
+            <div className="form-group mb-3">
+              <label>Nombres</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Nombres"
+                value={paciente.nombres}
+                onChange={e => setPaciente({ ...paciente, nombres: e.target.value })}
+                onKeyPress={validateTextInput}
+                required
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>Primer Apellido</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Primer Apellido"
+                value={paciente.primerApellido}
+                onChange={e => setPaciente({ ...paciente, primerApellido: e.target.value })}
+                onKeyPress={validateTextInput}
+                required
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>Segundo Apellido</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Segundo Apellido"
+                value={paciente.segundoApellido}
+                onChange={e => setPaciente({ ...paciente, segundoApellido: e.target.value })}
+                onKeyPress={validateTextInput}
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>Celular</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Celular"
+                value={paciente.numeroCelular}
+                onChange={e => setPaciente({ ...paciente, numeroCelular: e.target.value })}
+                onKeyPress={validatePhoneInput}
+                required
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>Fecha de Nacimiento</label>
+              <input
+                type="date"
+                className="form-control"
+                value={paciente.fechaNacimiento}
+                onChange={e => setPaciente({ ...paciente, fechaNacimiento: e.target.value })}
+                required
+              />
+            </div>
+            {/*<div className="form-group mb-3">
+              <label>Sexo</label>
+              <select
+                className="form-control"
+                value={paciente.sexo}
+                onChange={e => setPaciente({ ...paciente, sexo: e.target.value })}
+                required
+              >
+                <option value="">Seleccione</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Masculino">Masculino</option>
+              </select>
+            </div>*/}
+            <div className="form-group mb-3" >
+              <label>Sexo</label>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  id="sexoFemenino"
+                  name="sexo"
+                  value="Femenino"
+                  checked={paciente.sexo === "Femenino"}
+                  onChange={(e) => setPaciente({ ...paciente, sexo: e.target.value })}
+                  required
+                />
+                <label className="form-check-label" htmlFor="sexoFemenino">
+                  Femenino
+                </label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  id="sexoMasculino"
+                  name="sexo"
+                  value="Masculino"
+                  checked={paciente.sexo === "Masculino"}
+                  onChange={(e) => setPaciente({ ...paciente, sexo: e.target.value })}
+                  required
+                />
+                <label className="form-check-label" htmlFor="sexoMasculino">
+                  Masculino
+                </label>
+              </div>
+            </div>
 
-          <div className="d-flex justify-content-center mt-3">
-            <button type="submit" className="btn btn-primary me-2">
-              Actualizar Paciente
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => navigate('/lista-pacientes')}
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
+            <div className="form-group mb-3">
+              <label>Dirección</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Dirección"
+                value={paciente.direccion}
+                onChange={e => setPaciente({ ...paciente, direccion: e.target.value })}
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>CI</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="CI"
+                value={paciente.CI}
+                onChange={e => setPaciente({ ...paciente, CI: e.target.value })}
+                onKeyPress={(e) => {
+                  if (paciente.CI.length >= 13) {
+                    e.preventDefault();
+                  }
+                }}
+                required
+              />
+            </div>
+            <div className="form-group mb-3">
+              <label>Establecimiento</label>
+              <select
+                className="form-control"
+                value={paciente.EstablecimientoSalud_idEstablecimientoSalud}
+                onChange={e => setPaciente({ ...paciente, EstablecimientoSalud_idEstablecimientoSalud: e.target.value })}
+                required
+              >
+                <option value="">Seleccione un establecimiento</option>
+                {establecimientos.map(est => (
+                  <option key={est.idEstablecimientoSalud} value={est.idEstablecimientoSalud}>
+                    {est.nombreEstablecimiento}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group mb-3">
+              <label>Criterio de Ingreso</label>
+              <select
+                className="form-control"
+                value={paciente.idCriterioIngreso}
+                onChange={e => setPaciente({ ...paciente, idCriterioIngreso: e.target.value })}
+                required
+              >
+                <option value="">Seleccione un criterio</option>
+                {criterios.map(crit => (
+                  <option key={crit.idCriterioIngreso} value={crit.idCriterioIngreso}>
+                    {`${crit.tipo}-${crit.subtipo}-${crit.estadoIngreso}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="d-flex justify-content-center mt-3">
+              <button type="submit" className="btn btn-primary me-2">
+                Actualizar Paciente
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => navigate('/lista-pacientes')}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
 

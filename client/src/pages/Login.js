@@ -35,8 +35,10 @@ const Login = () => {
                     navigate('./../pacientes');
                 }*/
                     const roleRoutes = {
-                        'administrador': '/lista-personal-salud', 
-                        'medico': '/lista-pacientes'
+                        //'administrador': '/lista-personal-salud', 
+                        //'medico': '/lista-pacientes'
+                        'administrador': '/homea', 
+                        'medico': '/homeps'
                     };
 
                 // REDIRIGIMOS SEGUN EL ROL DEL USUARIO
