@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Layout from '../components/Layout';
 
 const ListaPersonalSalud = () => {
   const navigate = useNavigate();
@@ -22,39 +23,41 @@ const ListaPersonalSalud = () => {
   }, []);
 
   return (
-    <div className="container mt-5">
-      <h1 className="text-center mb-4">Lista de Personal de Salud</h1>
+    <Layout>
+      <div className="container mt-5">
+        <h1 className="text-center mb-4">Lista de Personal de Salud</h1>
+        
       
-     
-      <div className="d-flex justify-content-center mb-4">
-        <button className="btn btn-primary me-2" onClick={() => navigate('/registrar-personal-salud')}>
-          Añadir Nuevo Personal de Salud
-        </button>
-        <button className="btn btn-primary" onClick={() => navigate('/actualizar-personal-salud')}>
-          Actualizar Personal de Salud
-        </button>
-      </div>
+        <div className="d-flex justify-content-center mb-4">
+          <button className="btn btn-primary me-2" onClick={() => navigate('/registrar-personal-salud')}>
+            Añadir Nuevo Personal de Salud
+          </button>
+          <button className="btn btn-primary" onClick={() => navigate('/actualizar-personal-salud')}>
+            Actualizar Personal de Salud
+          </button>
+        </div>
 
-      
-      <table className="table table-bordered">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Rol</th>
-            <th>Celular</th>
-          </tr>
-        </thead>
-        <tbody>
-          {personalSalud.map((personal) => (
-            <tr key={personal.idPersona}>
-              <td>{`${personal.nombres} ${personal.primerApellido} ${personal.segundoApellido || ''}`}</td>
-              <td>{personal.rol}</td>
-              <td>{personal.numeroCelular}</td>
+        
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Rol</th>
+              <th>Celular</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {personalSalud.map((personal) => (
+              <tr key={personal.idPersona}>
+                <td>{`${personal.nombres} ${personal.primerApellido} ${personal.segundoApellido || ''}`}</td>
+                <td>{personal.rol}</td>
+                <td>{personal.numeroCelular}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Layout>
   );
 };
 

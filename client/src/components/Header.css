@@ -56,3 +56,20 @@
   color: #8C9FC4;
   font-weight: bold;
 }
+
+
+.logout {
+  background-color: red;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-align: center;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.logout:hover {
+  background-color: darkred;
+  color: white;
+  text-decoration: none;
+}

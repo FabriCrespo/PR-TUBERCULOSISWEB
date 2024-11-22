@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import Layout from '../components/LayoutPersonalSalud';
 
 function Paciente() {
   const [personas, setPersonas] = useState([]);
@@ -50,73 +51,75 @@ function Paciente() {
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="text-center mb-4">Lista de Pacientes</h2>
-      <div className="d-flex justify-content-center mt-4">
-        <Link to="/añadir-paciente" className="btn btn-primary">
-          <i className="bi bi-plus-lg me-1"></i>Añadir Paciente
-        </Link>
-      </div>
+    <Layout>
+      <div className="container mt-4">
+        <h2 className="text-center mb-4">Lista de Pacientes</h2>
+        <div className="d-flex justify-content-center mt-4">
+          <Link to="/añadir-paciente" className="btn btn-primary">
+            <i className="bi bi-plus-lg me-1"></i>Añadir Paciente
+          </Link>
+        </div>
 
-      {/* Campo de búsqueda alineado a la izquierda */}
-      <div className="mb-3" style={{ maxWidth: '300px' }}>
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Buscar por nombre de paciente"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-        />
-      </div>
+        {/* Campo de búsqueda alineado a la izquierda */}
+        <div className="mb-3" style={{ maxWidth: '300px' }}>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Buscar por nombre de paciente"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+        </div>
 
-      <table className="table table-bordered table-hover">
-        <thead className="table-light">
-          <tr>
-            <th>Nombre Completo</th>
-            <th>Celular</th>
-            <th>Fecha de Nacimiento</th>
-            <th>Sexo</th>
-            <th>Dirección</th>
-            <th>CI</th>
-            <th>Establecimiento de Salud</th>
-            <th>Criterio de Ingreso</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pacientesFiltrados.map(persona => (
-            <tr key={persona.idPersona}>
-              <td>{persona.nombreCompleto}</td>
-              <td>{persona.numeroCelular}</td>
-              <td>{formatearFecha(persona.fechaNacimiento)}</td>
-              <td>{persona.sexo}</td>
-              <td>{persona.direccion}</td>
-              <td>{persona.CI}</td>
-              <td>{persona.nombreEstablecimiento}</td>
-              <td>{persona.criterioIngreso}</td>
-              <td>
-                <div className="btn-group" role="group">
-                  <button
-                    className="btn btn-warning btn-sm"
-                    onClick={() => handleActualizarPaciente(persona.idPersona)}
-                  >
-                    <i className="bi bi-pencil-fill me-1"></i>Actualizar
-                  </button>
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => desactivarPaciente(persona.idPersona)} // Cambiado a desactivarPaciente
-                  >
-                    <i className="bi bi-trash-fill me-1"></i>Eliminar
-                  </button>
-                </div>
-              </td>
+        <table className="table table-bordered table-hover">
+          <thead className="table-light">
+            <tr>
+              <th>Nombre Completo</th>
+              <th>Celular</th>
+              <th>Fecha de Nacimiento</th>
+              <th>Sexo</th>
+              <th>Dirección</th>
+              <th>CI</th>
+              <th>Establecimiento de Salud</th>
+              <th>Criterio de Ingreso</th>
+              <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {pacientesFiltrados.map(persona => (
+              <tr key={persona.idPersona}>
+                <td>{persona.nombreCompleto}</td>
+                <td>{persona.numeroCelular}</td>
+                <td>{formatearFecha(persona.fechaNacimiento)}</td>
+                <td>{persona.sexo}</td>
+                <td>{persona.direccion}</td>
+                <td>{persona.CI}</td>
+                <td>{persona.nombreEstablecimiento}</td>
+                <td>{persona.criterioIngreso}</td>
+                <td>
+                  <div className="btn-group" role="group">
+                    <button
+                      className="btn btn-warning btn-sm"
+                      onClick={() => handleActualizarPaciente(persona.idPersona)}
+                    >
+                      <i className="bi bi-pencil-fill me-1"></i>Actualizar
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => desactivarPaciente(persona.idPersona)} // Cambiado a desactivarPaciente
+                    >
+                      <i className="bi bi-trash-fill me-1"></i>Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-     
-    </div>
+      
+      </div>
+    </Layout>
   );
 }
 

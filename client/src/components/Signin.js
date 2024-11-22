@@ -104,7 +104,7 @@ const Signin = ({ usuario, setUsuario, contrasenia, setContrasenia, handleLogin 
 
                     <div className="btn-redirect">
                         <p>
-                            <a href="./register">¿No tiene una cuenta? Regístrese</a>
+                            {/* <a href="./register">¿No tiene una cuenta? Regístrese</a> */}
                         </p>
                     </div>
                 </div>
