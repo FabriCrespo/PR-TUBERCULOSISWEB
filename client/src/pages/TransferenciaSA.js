@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import './Transferencia.css';
 import { useNavigate } from "react-router-dom";
-import Layout from "../components/LayoutAdmin";
+import Layout from "../components/Layout";
+
 
 const Transferencia = () => {
     const [formData, setFormData] = useState({
@@ -20,26 +21,15 @@ const Transferencia = () => {
     const [statusMessage, setStatusMessage] = useState("");
     const navigate = useNavigate();
 
-    const userRole = localStorage.getItem("userRole");
-    const userEstablecimiento = localStorage.getItem("userEstablecimiento");
-    const userIdEstablecimiento = localStorage.getItem("userIdEstablecimiento");
-    
-    console.log(`Rol: ${userRole}, Establecimiento: ${userEstablecimiento}, IdEstablecimiento: ${userIdEstablecimiento}`);
-
-
-
     useEffect(() => {
         fetch('http://localhost:3001/api/establecimientos')
             .then(response => response.json())
             .then(data => setEstablecimientos(data))
             .catch(error => console.error('Error fetching establecimientos:', error));
 
-        fetch(`http://localhost:3001/api/pacientesEstablecimiento?idEstablecimiento=${userIdEstablecimiento}`)
+        fetch('http://localhost:3001/api/pacientes')
             .then(response => response.json())
-            .then(data => {
-                console.log("Pacientes filtrados:", data); // Depuración
-                setPersonas(data);
-            })
+            .then(data => setPersonas(data))
             .catch(error => console.error('Error fetching pacientes:', error));
 
     }, []);
@@ -61,18 +51,17 @@ const Transferencia = () => {
                 const selectedPersona = personas.find(persona => persona.idPersona.toString() === value.toString());
                 setPersonaSeleccionada(selectedPersona);
 
-                if (selectedPersona && selectedPersona.EstablecimientoSalud_idEstablecimientoSalud) {
-                    const personaEstablecimiento = establecimientos.find(est => est.id.toString() === selectedPersona.EstablecimientoSalud_idEstablecimientoSalud.toString());
+                if (selectedPersona) {
+                    // Actualizar el establecimiento de origen con el ID del establecimiento asociado a la persona seleccionada
+                    const personaEstablecimiento = establecimientos.find(est => est.nombre === selectedPersona.nombreEstablecimiento);
                     if (personaEstablecimiento) {
                         setFormData(prevFormData => ({
                             ...prevFormData,
                             idEstablecimientoSaludOrigen: personaEstablecimiento.id.toString(),
                         }));
                         setEstablecimientoOrigen(personaEstablecimiento);
-                    } else {
-                        console.warn("No se encontró un establecimiento correspondiente a la persona seleccionada.");
                     }
-                }                
+                }
             }
         }
     };
@@ -135,7 +124,7 @@ const Transferencia = () => {
     
 
     const handleRedirect = () => {
-        navigate("/lista-transferencias");
+        navigate("/lista-transferenciasSA");
     };
 
 
@@ -171,7 +160,6 @@ const Transferencia = () => {
                             onChange={handleChange}
                             required
                             className="select-input"
-                            disabled 
                         >
                             <option value="">Selecciona un establecimiento</option>
                             {establecimientos.map(est => (

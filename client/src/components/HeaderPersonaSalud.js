@@ -7,7 +7,7 @@ const Header = () => {
     <header className="header">
       <nav className="navbar navbar-expand-lg navbar-dark custom-bg">
         <div className="container">
-          <Link className="navbar-brand" to="/homea">Sistema Tuberculosis</Link>
+          <Link className="navbar-brand" to="/homeps">Sistema Tuberculosis</Link>
           <button 
             className="navbar-toggler" 
             type="button" 
@@ -23,19 +23,13 @@ const Header = () => {
             <ul className="navbar-nav mx-auto justify-content-center">
               
               <li className="nav-item">
-                <Link className="nav-link" to="/lista-personal-salud">Personal Salud</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/registrar-establecimiento">Registrar Establecimiento</Link>
-              </li>
-              <li className="nav-item">
                 <Link className="nav-link" to="/seguimiento-tratamientos">Seguimiento Tratamientos</Link> 
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/lista-pacientes">Pacientes</Link> 
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/transferenciaSA">Transferencia</Link> 
+                <Link className="nav-link" to="/transferenciaPS">Transferencia</Link> 
               </li>
               <li className="nav-item">
                 <Link className="nav-link logout" to="/">Cerrar Sesión</Link>

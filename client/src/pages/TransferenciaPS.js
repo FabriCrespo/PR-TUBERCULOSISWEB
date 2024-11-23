@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import './Transferencia.css';
 import { useNavigate } from "react-router-dom";
-import Layout from "../components/LayoutAdmin";
+import Layout from "../components/LayoutPersonalSalud";
 
 const Transferencia = () => {
     const [formData, setFormData] = useState({
@@ -135,7 +135,7 @@ const Transferencia = () => {
     
 
     const handleRedirect = () => {
-        navigate("/lista-transferencias");
+        navigate("/lista-transferenciasPS");
     };
 
 

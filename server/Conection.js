@@ -23,8 +23,8 @@ app.use(express.urlencoded({ extended: true })); // Para datos URL-encoded
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "estucheS12", // 11352871
-  database: "tuberculosis",
+  password: "1234", // 11352871
+  database: "tuberculosisproyectlleno",
 });
 
 // Configura dónde se guardarán los archivos
@@ -91,6 +91,7 @@ app.post("/api/redesSalud", (req, res) => {
     VALUES (?, ?);
   `;
 
+  
   db.query(query, [nombreRedSalud, idSede], (err, result) => {
     if (err) {
       console.error("Error insertando la red de salud:", err);
@@ -766,7 +767,6 @@ app.put("/api/pacientesDelete/:id/estado", (req, res) => {
 // LOGIN O AUTENTICACION DE USUARIOS CON VERIFICACION DE NOMBRE_USUARIO Y CONTRASEÑA
 // NOTA:      EJECUTAR -> ALTER TABLE personalsalud ADD COLUMN estado TINYINT DEFAULT 1;
 //            1
-
 app.get("/api/login", (req, res) => {
   const { nombreUsuario, contrasenia } = req.query;
 
@@ -776,14 +776,23 @@ app.get("/api/login", (req, res) => {
       .json({ error: "Nombre de usuario y contraseña son obligatorios" });
   }
 
-  const query = ` SELECT PS.persona_idPersona AS Nro, PS.usuario AS Credencial, 
-                  PS.contrasenia AS 'Clave Segura', PS.rol AS 'Nivel Acceso'
-                  FROM personalsalud PS
-                  WHERE PS.usuario = ? AND PS.contrasenia = ?`; // CONSULTA SQL
+  const query = `
+    SELECT 
+      p.idPersona AS Nro, 
+      ps.usuario AS Credencial, 
+      ps.contrasenia AS ClaveSegura, 
+      ps.rol AS NivelAcceso,
+      p.EstablecimientoSalud_idEstablecimientoSalud AS idEstablecimiento,
+      e.nombreEstablecimiento AS Establecimiento
+    FROM personalsalud ps
+    INNER JOIN persona p ON ps.persona_idPersona = p.idPersona
+    INNER JOIN establecimientosalud e ON p.EstablecimientoSalud_idEstablecimientoSalud = e.idEstablecimientoSalud
+    WHERE ps.usuario = ? AND ps.contrasenia = ?
+  `;
 
   db.query(query, [nombreUsuario, contrasenia], (error, result) => {
-    // EJECUCION
     if (error) {
+      console.error("Error en el servidor:", error);
       return res.status(500).json({ error: "Error en el servidor" });
     }
 
@@ -792,10 +801,11 @@ app.get("/api/login", (req, res) => {
     }
 
     res.json({
-      // ENVIO DE DATOS
-      Nro: result[0].Nro,
+      idPersona: result[0].Nro,
       usuario: result[0].Credencial,
-      rol: result[0]["Nivel Acceso"],
+      rol: result[0].NivelAcceso,
+      idEstablecimiento: result[0].idEstablecimiento,
+      establecimiento: result[0].Establecimiento,
     });
   });
 });
@@ -847,43 +857,76 @@ app.post('/api/loginmobile', (req, res) => {
   });
 });
 
-app.post('/api/transferencias', upload.single('documentoRef'), async (req, res) => {
+app.post('/api/transferencias', async (req, res) => {
+
+  const { 
+    idEstablecimientoSaludOrigen, 
+    idPersona, 
+    idEstablecimientoSaludDestino, 
+    Motivo, 
+    Observacion, 
+    documentoRef 
+  } = req.body;
+
+  // Validación de campos
+  if (!idEstablecimientoSaludOrigen || !idPersona || !idEstablecimientoSaludDestino || !Motivo || !Observacion || !documentoRef) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios, incluyendo el documento.' });
+  }
+
   try {
-    // Verifica si el archivo fue recibido
-    if (!req.file) {
-      return res.status(400).json({ error: 'No se ha subido ningún archivo' });
-    }
-
-    // Accede al archivo como buffer
-    const documentoRef = req.file.buffer;
-
-    // Verifica que los campos necesarios estén presentes en el cuerpo de la solicitud
-    const { idEstablecimientoSaludOrigen, persona_idPersona, idEstablecimientoSaludDestino, Motivo, Observacion } = req.body;
-
-    if (!idEstablecimientoSaludOrigen || !persona_idPersona || !idEstablecimientoSaludDestino || !Motivo || !Observacion) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios en la solicitud' });
-    }
-
-    // Guarda la transferencia en la base de datos
+    // Inserta los datos en la tabla `transferencia`
     const query = `
-      INSERT INTO transferencia (idEstablecimientoSaludOrigen, idPersona, idEstablecimientoSaludDestino, motivo, observacion, documentoRef)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO transferencia 
+      (idEstablecimientoSaludOrigen, idPersona, idEstablecimientoSaludDestino, motivo, observacion, documentoRef, fechaCreacion)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
+    const fechaCreacion = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-    const values = [idEstablecimientoSaludOrigen, persona_idPersona, idEstablecimientoSaludDestino, Motivo, Observacion, documentoRef];
+    db.query(
+      query,
+      [
+        idEstablecimientoSaludOrigen,
+        idPersona,
+        idEstablecimientoSaludDestino,
+        Motivo,
+        Observacion,
+        documentoRef,
+        fechaCreacion,
+      ],
+      (error, results) => {
+        if (error) {
+          console.error('Error al insertar transferencia en la base de datos:', error);
+          return res.status(500).json({ error: 'Error al guardar la transferencia en la base de datos.' });
+        }
 
-    db.query(query, values, (err, result) => {
-      if (err) {
-        console.error('Error al insertar transferencia:', err);
-        return res.status(500).json({ error: 'Error al guardar la transferencia' });
+        // Después de insertar la transferencia, actualizamos el establecimiento de salud del paciente
+        const updateQuery = `
+          UPDATE persona 
+          SET EstablecimientoSalud_idEstablecimientoSalud = ?
+          WHERE idPersona = ?
+        `;
+
+        db.query(
+          updateQuery,
+          [idEstablecimientoSaludDestino, idPersona],
+          (updateError, updateResults) => {
+            if (updateError) {
+              console.error('Error al actualizar el establecimiento del paciente:', updateError);
+              return res.status(500).json({ error: 'Error al actualizar el establecimiento del paciente.' });
+            }
+
+        // Si todo es exitoso, responde con éxito
+        res.status(200).json({
+          message: 'Transferencia registrada correctamente.',
+          transferenciaId: results.insertId,
+        });
       }
-
-      res.status(200).json({ message: 'Transferencia registrada exitosamente' });
-    });
-
+    );
+  }
+);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al guardar la transferencia' });
+    console.error('Error en el servidor:', error);
+    res.status(500).json({ error: 'Error al procesar la transferencia.' });
   }
 });
 
@@ -904,6 +947,58 @@ app.get('/api/transferencias/:id', async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener la transferencia' });
+  }
+});
+
+app.get('/api/gettransferencias', async (req, res) => {
+  try {
+    const query = `SELECT 
+  t.idTransferencia, 
+  e.idEstablecimientoSalud AS idEstablecimientoSaludOrigen, -- Asegúrate de incluir este campo
+  e.nombreEstablecimiento AS establecimientoOrigen, 
+  es.nombreEstablecimiento AS establecimientoDestino, 
+  CONCAT(p.nombres, ' ', p.primerApellido, ' ', IFNULL(p.segundoApellido, '')) AS nombreCompleto, 
+  t.motivo, t.observacion, t.documentoRef
+FROM transferencia t
+INNER JOIN establecimientosalud e ON t.idEstablecimientoSaludOrigen = e.idEstablecimientoSalud
+INNER JOIN establecimientosalud es ON t.idEstablecimientoSaludDestino = es.idEstablecimientoSalud
+INNER JOIN persona p ON t.idPersona = p.idPersona;
+`;
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error('Error al obtener transferencias:', err);
+        return res.status(500).json({ error: 'Error al obtener transferencias' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+app.get('/api/pacientesEstablecimiento', async (req, res) => {
+  const { idEstablecimiento } = req.query; // Obtener ID del establecimiento de la solicitud
+
+  try {
+    const query = `SELECT 
+    p.idPersona, CONCAT(p.nombres, ' ', p.primerApellido, ' ', IFNULL(p.segundoApellido, '')) AS nombreCompleto,
+    p.numeroCelular, p.fechaNacimiento, p.sexo, p.direccion, p.CI, p.EstablecimientoSalud_idEstablecimientoSalud
+    FROM persona p
+    LEFT JOIN personalsalud ps ON p.idPersona = ps.persona_idPersona
+    WHERE p.EstablecimientoSalud_idEstablecimientoSalud = ? AND p.estado = 1 AND (ps.persona_idPersona IS NULL );
+    `;
+
+    db.query(query, [idEstablecimiento], (err, results) => {
+      if (err) {
+        console.error('Error al obtener pacientes:', err);
+        return res.status(500).json({ error: 'Error al obtener pacientes' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error('Error del servidor:', error);
+    res.status(500).json({ error: 'Error del servidor' });
   }
 });
 
