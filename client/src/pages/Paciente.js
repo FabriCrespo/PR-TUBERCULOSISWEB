@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import Layout from '../components/LayoutPersonalSalud';
+import Layout from '../components/Layout';
 
 function Paciente() {
   const [personas, setPersonas] = useState([]);
@@ -22,9 +22,10 @@ function Paciente() {
     if (confirmed) {
       axios.put(`http://localhost:3001/api/pacientesDelete/${id}/estado`)
         .then(() => {
-          setPersonas(personas.map(persona => 
+          /*setPersonas(personas.map(persona => 
             persona.idPersona === id ? { ...persona, estado: 0 } : persona
-          ));
+          ));*/
+          setPersonas(personas.filter(persona => persona.idPersona !== id));
           alert('Paciente desactivado correctamente');
         })
         .catch(error => {
@@ -57,6 +58,11 @@ function Paciente() {
         <div className="d-flex justify-content-center mt-4">
           <Link to="/añadir-paciente" className="btn btn-primary">
             <i className="bi bi-plus-lg me-1"></i>Añadir Paciente
+          </Link>
+        </div>
+        <div className="d-flex justify-content-center mt-4">
+          <Link to="/recuperar-pacientes" className="btn btn-secondary">
+            <i className="bi bi-arrow-return-left me-1"></i>Recuperar Pacientes
           </Link>
         </div>
 
@@ -117,7 +123,7 @@ function Paciente() {
           </tbody>
         </table>
 
-      
+
       </div>
     </Layout>
   );

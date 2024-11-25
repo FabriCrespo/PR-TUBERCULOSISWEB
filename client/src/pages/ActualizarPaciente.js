@@ -1,7 +1,9 @@
+/* src/pages/ActualizarPaciente.js */
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import Layout from '../components/LayoutPersonalSalud';
+import Layout from '../components/Layout';
 
 function ActualizarPaciente() {
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ function ActualizarPaciente() {
         const response = await axios.get(`http://localhost:3001/api/pacientesForm/${id}`);
         const data = response.data;
 
-        // Convertir fechaNacimiento a formato 'YYYY-MM-DD' si es necesario
+
         if (data.fechaNacimiento) {
           data.fechaNacimiento = new Date(data.fechaNacimiento).toISOString().split('T')[0];
         }
@@ -99,7 +101,8 @@ function ActualizarPaciente() {
       .catch(error => {
         console.error('Error al actualizar paciente:', error);
         alert('No se pudo actualizar el paciente. Intente de nuevo más tarde.');
-      });
+      }
+      );
   };
 
   return (

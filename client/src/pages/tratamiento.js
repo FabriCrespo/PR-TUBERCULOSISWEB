@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Layout from '../components/LayoutPersonalSalud';
+import Layout from '../components/Layout';
 
 const SeguimientoTratamientos = () => {
   const [searchTerm, setSearchTerm] = useState('');
