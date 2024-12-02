@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
+import Cookies from "js-cookie"; // Cookies
 
 const SeguimientoTratamientos = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,6 +16,10 @@ const SeguimientoTratamientos = () => {
   });
   const [showModal, setShowModal] = useState(false);
 
+  // Obtener el establecimientoId y rol desde las cookies
+  const establecimientoId = Cookies.get('establecimientoId');
+  const userRole = Cookies.get('rol'); 
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -22,8 +27,19 @@ const SeguimientoTratamientos = () => {
   const fetchResults = async () => {
     if (searchTerm.trim()) {
       try {
-        const response = await fetch(`http://localhost:3001/api/pacientes`);
+        // Construir la URL con los parámetros necesarios
+        let url = `http://localhost:3001/api/pacientes?rol=${userRole}`;
+
+        // Si el usuario no es superadmin, agregar el filtro por establecimientoId
+        if (userRole !== 'superadmin') {
+          url += `&establecimientoId=${establecimientoId}`;
+        }
+
+        // Realizar la solicitud
+        const response = await fetch(url);
         const data = await response.json();
+
+        // Filtrar los resultados por nombre
         const filteredResults = data.filter(person =>
           person.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase())
         );
@@ -35,6 +51,11 @@ const SeguimientoTratamientos = () => {
       setResults([]);
     }
   };
+
+  useEffect(() => {
+    // Llamar a la búsqueda solo cuando el término de búsqueda cambie
+    fetchResults();
+  }, [searchTerm, userRole]); // Asegurarse de que se ejecuta cuando searchTerm o userRole cambian
 
   const fetchTreatments = async (personId) => {
     try {
@@ -52,10 +73,6 @@ const SeguimientoTratamientos = () => {
     setSearchTerm(person.nombreCompleto);
     fetchTreatments(person.idPersona);
   };
-
-  useEffect(() => {
-    fetchResults();
-  }, [searchTerm]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -193,41 +210,76 @@ const SeguimientoTratamientos = () => {
                 <div className="modal-dialog" role="document">
                   <div className="modal-content">
                     <div className="modal-header">
-                      <h5 className="modal-title">Agregar Nuevo Tratamiento</h5>
-                      <button type="button" className="close" onClick={() => setShowModal(false)}>
-                        <span>&times;</span>
+                      <h5 className="modal-title">Nuevo Tratamiento</h5>
+                      <button
+                        type="button"
+                        className="close"
+                        onClick={() => setShowModal(false)}
+                        aria-label="Close"
+                      >
+                        <span aria-hidden="true">&times;</span>
                       </button>
                     </div>
                     <div className="modal-body">
                       <form>
                         <div className="form-group">
                           <label>Medicamento</label>
-                          <input type="text" name="medicamento" className="form-control" value={newTreatment.medicamento} onChange={handleInputChange} />
+                          <input
+                            type="text"
+                            name="medicamento"
+                            value={newTreatment.medicamento}
+                            onChange={handleInputChange}
+                            className="form-control"
+                          />
                         </div>
                         <div className="form-group">
-                          <label>Fecha Inicio</label>
-                          <input type="date" name="fechaInicio" className="form-control" value={newTreatment.fechaInicio} onChange={handleInputChange} />
+                          <label>Fecha de Inicio</label>
+                          <input
+                            type="date"
+                            name="fechaInicio"
+                            value={newTreatment.fechaInicio}
+                            onChange={handleInputChange}
+                            className="form-control"
+                          />
                         </div>
                         <div className="form-group">
-                          <label>Fecha Finalización</label>
-                          <input type="date" name="fechaFinalizacion" className="form-control" value={newTreatment.fechaFinalizacion} onChange={handleInputChange} />
+                          <label>Fecha de Finalización</label>
+                          <input
+                            type="date"
+                            name="fechaFinalizacion"
+                            value={newTreatment.fechaFinalizacion}
+                            onChange={handleInputChange}
+                            className="form-control"
+                          />
                         </div>
                         <div className="form-group">
                           <label>Cantidad de Dosis</label>
-                          <input type="number" name="cantDosis" className="form-control" value={newTreatment.cantDosis} onChange={handleInputChange} />
+                          <input
+                            type="number"
+                            name="cantDosis"
+                            value={newTreatment.cantDosis}
+                            onChange={handleInputChange}
+                            className="form-control"
+                          />
                         </div>
                         <div className="form-group">
-                          <label>Intervalo de Tiempo (hrs)</label>
-                          <input type="number" name="intervaloTiempo" className="form-control" value={newTreatment.intervaloTiempo} onChange={handleInputChange} />
+                          <label>Intervalo de Tiempo (horas)</label>
+                          <input
+                            type="number"
+                            name="intervaloTiempo"
+                            value={newTreatment.intervaloTiempo}
+                            onChange={handleInputChange}
+                            className="form-control"
+                          />
                         </div>
                       </form>
                     </div>
                     <div className="modal-footer">
-                      <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
-                        Cerrar
+                      <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                        Cancelar
                       </button>
-                      <button type="button" className="btn btn-primary" onClick={handleAddTreatment}>
-                        Agregar Tratamiento
+                      <button className="btn btn-primary" onClick={handleAddTreatment}>
+                        Guardar
                       </button>
                     </div>
                   </div>

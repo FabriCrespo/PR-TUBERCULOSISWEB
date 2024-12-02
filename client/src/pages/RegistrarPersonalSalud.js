@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; 
 import Layout from '../components/Layout';
+import Cookies from 'js-cookie';
 
 const RegistrarPersonalSalud = () => {
   const navigate = useNavigate(); 
@@ -19,18 +20,36 @@ const RegistrarPersonalSalud = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+   // Obtener el ID del establecimiento del usuario logueado desde las cookies
+   const idEstablecimientoUsuario = Cookies.get('establecimientoId');
+
+   useEffect(() => {
     const fetchEstablecimientos = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/establecimientosa');
-        setEstablecimientos(response.data);
+        const response = await axios.get(`http://localhost:3001/api/establecimientosa/${idEstablecimientoUsuario}`);
+
+        const establecimientosData = response.data;
+
+        // Filtrar para solo mostrar el establecimiento del usuario logueado
+        const establecimientoFiltrado = establecimientosData.filter(
+          est => est.idEstablecimientoSalud === parseInt(idEstablecimientoUsuario)
+        );
+        setEstablecimientos(establecimientoFiltrado);  // Solo el establecimiento del usuario logueado
+
+        // Establecer el valor del establecimiento automáticamente en el estado del formulario
+        if (establecimientoFiltrado.length > 0) {
+          setFormData(prevState => ({
+            ...prevState,
+            EstablecimientoSalud_idEstablecimientoSalud: establecimientoFiltrado[0].idEstablecimientoSalud
+          }));
+        }
       } catch (error) {
         console.error('Error al obtener los establecimientos:', error);
       }
     };
 
     fetchEstablecimientos();
-  }, []);
+  }, [idEstablecimientoUsuario]);
 
   const handleChange = (e) => {
     setFormData({

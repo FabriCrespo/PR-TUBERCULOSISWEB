@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 import axios from 'axios';
 import Layout from '../components/Layout';
 
@@ -30,24 +31,37 @@ const ListaPersonalSalud = () => {
   // Función para obtener el personal activo desde la API
   const obtenerPersonalActivo = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/personalSalud');
+      const establecimientoId = Cookies.get("establecimientoId"); // Obtener el ID del establecimiento
+      const rol = Cookies.get("rol"); // Obtener el rol del usuario
+      const response = await axios.get("http://localhost:3001/api/personalSalud", {
+        params: { 
+          establecimientoId, 
+          search: filtro, 
+          rol // Enviar el rol como parámetro
+        },
+      });
       setPersonalSalud(response.data);
     } catch (error) {
-      console.error('Error al obtener el personal de salud activo:', error);
-      setError('Hubo un error al cargar los datos. Por favor, intenta nuevamente.');
+      console.error("Error al obtener el personal de salud activo:", error);
+      setError("Hubo un error al cargar los datos. Por favor, intenta nuevamente.");
     }
   };
+  
 
   // Función para obtener el personal inactivo desde la API
   const obtenerPersonalInactivo = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/personalSaludInactivo');
+      const establecimientoId = Cookies.get("establecimientoId"); // Obtener el ID del establecimiento
+      const response = await axios.get("http://localhost:3001/api/personalSaludInactivo", {
+        params: { establecimientoId, search: filtro }, // Enviar parámetros
+      });
       setPersonalSalud(response.data);
     } catch (error) {
-      console.error('Error al obtener el personal de salud inactivo:', error);
-      setError('Hubo un error al cargar los datos. Por favor, intenta nuevamente.');
+      console.error("Error al obtener el personal de salud inactivo:", error);
+      setError("Hubo un error al cargar los datos. Por favor, intenta nuevamente.");
     }
   };
+  
 
   // Función para desactivar (poner estado en 0) un registro de personal de salud
   const desactivarPaciente = (id) => {

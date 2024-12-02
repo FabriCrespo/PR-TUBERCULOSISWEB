@@ -18,7 +18,10 @@ import RecuperarPacientes from './pages/RecuperarPacientes';
 import Establecimientos from './pages/ListaEstablecimientos';
 import ActualizarEstablecimiento from './pages/ActualizarEstablecimiento';
 import Transferencia from './pages/Transferencia';
-
+import PdfViewer from './pages/VistaPdf';
+import ListaAdministradores from './pages/ListaAdministradores';
+import ActualizarAdministrador from './pages/ActualizarAdministrador';
+import RegistrarAdministrador from './pages/RegistrarAdministrador';
 
 
 
@@ -44,6 +47,11 @@ function App() {
           <Route path="/lista-establecimientos" element={<Establecimientos />} />
           <Route path='/actualizar-establecimiento/:id' element={<ActualizarEstablecimiento />} />
           <Route path="/transferencia" element={<Transferencia />} />
+          <Route path='/vista-pdf' element={<PdfViewer />} />
+          <Route path='/lista-admins' element={<ListaAdministradores/>}/>
+          <Route path="/modificar-administrador/:id" element={<ActualizarAdministrador />} />
+          <Route path='/registrar-administrador' element={<RegistrarAdministrador/>}/>
+
           
         </Routes>
       

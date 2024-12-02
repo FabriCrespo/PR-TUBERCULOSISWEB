@@ -63,10 +63,6 @@ app.listen(3001, () => {
 
 
 
-
-
-
-
 // Rutas
 
 /***************************************************************************************/
@@ -84,7 +80,6 @@ app.get("/api/criterios", (req, res) => {
     res.json(result);
   });
 });
-
 
 
 /***************************************************************************************/
@@ -128,18 +123,44 @@ app.post("/api/establecimientoSalud", (req, res) => {
 });
 
 // Ruta para obtener establecimientos de salud -----------------------------------------------------------------------
-app.get('/api/establecimientosa', (req, res) => {
+app.get('/api/establecimientosa/:idEstablecimientoSalud', (req, res) => {
+  const { idEstablecimientoSalud } = req.params;
   const query = `
-  SELECT idEstablecimientoSalud, nombreEstablecimiento 
-  FROM establecimientosalud 
-  WHERE estado = 1;  
-`;
-
-  db.query(query, (err, result) => {
+    SELECT idEstablecimientoSalud, nombreEstablecimiento
+    FROM establecimientosalud
+    WHERE estado = 1 AND idEstablecimientoSalud = ?;
+  `;
+  db.query(query, [idEstablecimientoSalud], (err, result) => {
     if (err) {
       console.error('Error obteniendo los establecimientos:', err);
       return res.status(500).json({ error: 'Error en el servidor' });
     }
+    if (result.length === 0) {
+      return res.status(404).json({ message: 'No se encontró el establecimiento de salud especificado.' });
+    }
+    res.json(result);
+  });
+});
+
+
+app.get('/api/establecimientosl', (req, res) => {
+  const { EstablecimientoSalud } = req.params;
+  const query = `
+  SELECT idEstablecimientoSalud, nombreEstablecimiento
+  FROM establecimientosalud
+  WHERE estado = 1;
+`;
+
+  db.query(query, [EstablecimientoSalud], (err, result) => {
+    if (err) {
+      console.error('Error obteniendo los establecimientos:', err);
+      return res.status(500).json({ error: 'Error en el servidor' });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: 'No se encontró el establecimiento de salud especificado.' });
+    }
+    
     res.json(result);
   });
 });
@@ -277,12 +298,9 @@ app.put('/api/establecimientoo/:id', (req, res) => {
   });
 });
 
-
-
 /***************************************************************************************/
 /******************************** FAMILIAR DE REFERENCIA *******************************/
 /***************************************************************************************/
-
 
 
 /***************************************************************************************/
@@ -302,9 +320,8 @@ app.post('/api/pacientes', (req, res) => {
     res.json({ message: 'Paciente insertado con éxito', id: result.insertId });
   });
 });
-
 // Ruta para obtener la lista de pacientes
-app.get("/api/pacientes", (req, res) => {
+/*app.get("/api/pacientes", (req, res) => {
   const query = `
     SELECT 
     p.idPersona, 
@@ -320,10 +337,63 @@ app.get("/api/pacientes", (req, res) => {
     INNER JOIN establecimientosalud e ON p.EstablecimientoSalud_idEstablecimientoSalud = e.idEstablecimientoSalud
     LEFT JOIN criterioingreso ci ON p.idCriterioIngreso = ci.idCriterioIngreso
     LEFT JOIN personalsalud ps ON p.idPersona = ps.persona_idPersona
-    WHERE p.estado = 1 AND (ps.persona_idPersona IS NULL OR ps.rol NOT IN ('Medico', 'Administrador'));
+    WHERE p.estado = 1 AND (ps.persona_idPersona IS NULL OR ps.rol NOT IN ('Medico', 'Administrador', 'Enfermero/a'));
   `;
 
   db.query(query, (err, result) => {
+    if (err) {
+      console.error("Error obteniendo la lista de pacientes:", err);
+      return res.status(500).json({ error: "Error en el servidor" });
+    }
+    res.json(result);
+  });
+});*/
+
+app.get("/api/pacientes", (req, res) => {
+  const { establecimientoId } = req.query;
+  const rolUsuario = req.query.rol;  // El rol del usuario se pasa como parámetro
+
+  // Si es superadmin, no se filtra por establecimiento
+  const query = rolUsuario === 'superadmin' ?
+    `
+    SELECT 
+      p.idPersona, 
+      CONCAT(p.nombres, ' ', p.primerApellido, ' ', IFNULL(p.segundoApellido, '')) AS nombreCompleto,
+      p.numeroCelular, 
+      p.fechaNacimiento, 
+      p.sexo, 
+      p.direccion, 
+      p.CI,
+      e.nombreEstablecimiento,
+      CONCAT(ci.tipo, '-', ci.subtipo, '-', ci.estadoIngreso) AS criterioIngreso
+    FROM persona p
+    INNER JOIN establecimientosalud e ON p.EstablecimientoSalud_idEstablecimientoSalud = e.idEstablecimientoSalud
+    LEFT JOIN criterioingreso ci ON p.idCriterioIngreso = ci.idCriterioIngreso
+    LEFT JOIN personalsalud ps ON p.idPersona = ps.persona_idPersona
+    WHERE p.estado = 1
+    AND (ps.persona_idPersona IS NULL OR ps.rol NOT IN ('Medico', 'Administrador', 'Enfermero/a','SuperAdmin'));
+    ` :
+    `
+    SELECT 
+      p.idPersona, 
+      CONCAT(p.nombres, ' ', p.primerApellido, ' ', IFNULL(p.segundoApellido, '')) AS nombreCompleto,
+      p.numeroCelular, 
+      p.fechaNacimiento, 
+      p.sexo, 
+      p.direccion, 
+      p.CI,
+      e.nombreEstablecimiento,
+      CONCAT(ci.tipo, '-', ci.subtipo, '-', ci.estadoIngreso) AS criterioIngreso
+    FROM persona p
+    INNER JOIN establecimientosalud e ON p.EstablecimientoSalud_idEstablecimientoSalud = e.idEstablecimientoSalud
+    LEFT JOIN criterioingreso ci ON p.idCriterioIngreso = ci.idCriterioIngreso
+    LEFT JOIN personalsalud ps ON p.idPersona = ps.persona_idPersona
+    WHERE p.estado = 1 
+    AND e.idEstablecimientoSalud = ?
+    AND (ps.persona_idPersona IS NULL OR ps.rol NOT IN ('Medico', 'Administrador', 'Enfermero/a','SuperAdmin'));
+    `;
+
+  db.query(query, rolUsuario === 'superadmin' ? [] : [establecimientoId], (err, result) => {
     if (err) {
       console.error("Error obteniendo la lista de pacientes:", err);
       return res.status(500).json({ error: "Error en el servidor" });
@@ -456,7 +526,7 @@ app.get("/api/pacientesEliminados", (req, res) => {
     INNER JOIN establecimientosalud e ON p.EstablecimientoSalud_idEstablecimientoSalud = e.idEstablecimientoSalud
     LEFT JOIN criterioingreso ci ON p.idCriterioIngreso = ci.idCriterioIngreso
     LEFT JOIN personalsalud ps ON p.idPersona = ps.persona_idPersona
-    WHERE p.estado = 0 AND (ps.persona_idPersona IS NULL OR ps.rol NOT IN ('Medico', 'Administrador'));
+    WHERE p.estado = 0 AND (ps.persona_idPersona IS NULL OR ps.rol NOT IN ('Medico', 'Administrador', "Enfermero/a"));
   `;
 
   db.query(query, (err, result) => {
@@ -487,9 +557,6 @@ app.put('/api/pacientesActive/:id/estado', (req, res) => {
     return res.status(200).json({ message: 'Estado del paciente actualizado a 1 correctamente.' });
   });
 });
-
-
-
 
 /***************************************************************************************/
 /********************************** PERSONAL DE SALUD **********************************/
@@ -554,23 +621,52 @@ app.post("/api/personalSalud", (req, res) => {
 
 // Ruta para obtener el personal de salud con búsqueda por nombre
 app.get("/api/personalSalud", (req, res) => {
-  const { search } = req.query;
+  const { search, establecimientoId, rol } = req.query;
+
+  if (!establecimientoId && rol !== 'superadmin') {
+    return res.status(400).json({ error: "El ID del establecimiento es obligatorio." });
+  }
+
   let query = `
-    SELECT p.idPersona, p.nombres, p.primerApellido, p.segundoApellido, p.numeroCelular, ps.rol, p.CI, e.nombreEstablecimiento
+    SELECT 
+      p.idPersona, 
+      p.nombres, 
+      p.primerApellido, 
+      p.segundoApellido, 
+      p.numeroCelular, 
+      ps.rol,  
+      p.CI,
+      e.nombreEstablecimiento
     FROM persona p
     INNER JOIN personalsalud ps ON p.idPersona = ps.persona_idPersona
     INNER JOIN establecimientosalud e ON p.EstablecimientoSalud_idEstablecimientoSalud = e.idEstablecimientoSalud
-    WHERE p.estado = 1 AND (ps.rol = 'medico' OR ps.rol = 'enfermero/a');
+    WHERE p.estado = 1 
+      AND (ps.rol = 'medico' OR ps.rol = 'enfermero/a')
   `;
 
-  db.query(query, [`%${search}%`, `%${search}%`, `%${search}%`], (err, result) => {
+  const params = [];
+
+  // Si el rol no es superadmin, filtrar por establecimiento
+  if (rol !== 'superadmin') {
+    query += ` AND e.idEstablecimientoSalud = ?`;
+    params.push(establecimientoId);
+  }
+
+  // Agregar búsqueda si está presente
+  if (search) {
+    query += ` AND (p.nombres LIKE ? OR p.primerApellido LIKE ? OR p.segundoApellido LIKE ?)`;
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+
+  db.query(query, params, (err, result) => {
     if (err) {
-      console.error('Error obteniendo el personal de salud:', err);
-      return res.status(500).json({ error: 'Error en el servidor' });
+      console.error("Error obteniendo el personal de salud:", err);
+      return res.status(500).json({ error: "Error en el servidor" });
     }
     res.json(result);
   });
 });
+
 
 // Ruta para obtener el personal de salud INACTIVO
 app.get('/api/personalSaludInactivo', (req, res) => {
@@ -636,16 +732,16 @@ app.put('/api/personalSalud/:id', (req, res) => {
   });
 });
 
-
 /***************************************************************************************/
 /************************************ REDES DE SALUD ***********************************/
 /***************************************************************************************/
+// Ruta para insertar red de salud -----------------------------------------------------------------
 // Ruta para insertar red de salud -----------------------------------------------------------------
 app.post("/api/redesSalud", (req, res) => {
   const { nombreRedSalud, idSede } = req.body;
 
   const query = `
-    INSERT INTO RedSalud (nombreRedSalud, idSede)
+    INSERT INTO redsalud (nombreRedSalud, idSede)
     VALUES (?, ?);
   `;
 
@@ -661,9 +757,10 @@ app.post("/api/redesSalud", (req, res) => {
 // Ruta para obtener redes de salud según la sede ----------------------------------------------
 app.get("/api/redesSalud/:idSede", (req, res) => {
   const { idSede } = req.params;
+  console.log('Solicitud recibida para idSede:', idSede);
   const query = `
     SELECT idRedSalud, nombreRedSalud 
-    FROM RedSalud 
+    FROM redsalud 
     WHERE idSede = ? AND estado = 1; 
   `;
   db.query(query, [idSede], (err, result) => {
@@ -671,12 +768,10 @@ app.get("/api/redesSalud/:idSede", (req, res) => {
       console.error("Error obteniendo las redes de salud:", err);
       return res.status(500).json({ error: "Error en el servidor" });
     }
+    console.log('Redes de salud obtenidas:', result);
     res.json(result);
   });
 });
-
-
-
 
 /***************************************************************************************/
 /**************************************** SEDES ****************************************/
@@ -697,14 +792,9 @@ app.get("/api/sedes", (req, res) => {
   });
 });
 
-
-
-
 /***************************************************************************************/
 /************************************* SEGUIMIENTO *************************************/
 /***************************************************************************************/
-
-
 
 /***************************************************************************************/
 /************************************ TRANSFERENCIA ************************************/
@@ -769,8 +859,33 @@ app.get('/api/transferencias/:id', async (req, res) => {
   }
 });
 
+// API PARA VER EL PDF
+app.get("/api/get-pdf/:id", (req, res) => {
+  const { id } = req.params;
 
+  const query = `
+    SELECT documentoRef
+    FROM transferencia 
+    WHERE idTransferencia = ?
+  `;
 
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error("Error al recuperar el archivo PDF:", err);
+      return res.status(500).json({ error: "Error interno del servidor" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Archivo no encontrado" });
+    }
+
+    const pdfData = result[0].documentoRef;
+
+    // Establecer encabezados para enviar el archivo como respuesta
+    res.setHeader("Content-Type", "application/pdf");
+    res.send(pdfData);
+  });
+});
 
 /***************************************************************************************/
 /************************************* TRATAMIENTO *************************************/
@@ -812,13 +927,6 @@ app.get("/api/tratamientos/:personaId", (req, res) => {
 });
 
 
-
-
-
-
-
-
-
 /***************************************************************************************/
 /**************************************** LOGIN ****************************************/
 /***************************************************************************************/
@@ -827,30 +935,49 @@ app.get("/api/tratamientos/:personaId", (req, res) => {
 //            1
 app.get("/api/login", (req, res) => {
   const { nombreUsuario, contrasenia } = req.query;
-
   if (!nombreUsuario || !contrasenia) {
     return res.status(400).json({ error: "Nombre de usuario y contraseña son obligatorios" });
   }
+  const query = `
+    SELECT 
+      PS.persona_idPersona AS Nro,
+      PS.usuario AS Credencial,
+      PS.contrasenia AS 'Clave Segura',
+      PS.rol AS 'Nivel Acceso',
+      ES.idEstablecimientoSalud AS EstablecimientoId,
+      ES.nombreEstablecimiento AS EstablecimientoNombre
+    FROM 
+      personalsalud PS
+    JOIN 
+      persona P ON PS.persona_idPersona = P.idPersona
+    JOIN 
+      establecimientosalud ES ON P.EstablecimientoSalud_idEstablecimientoSalud = ES.idEstablecimientoSalud
+    WHERE 
+      PS.usuario = ? AND PS.contrasenia = ? AND P.estado = 1;
+  `;
 
-  const query = ` SELECT PS.persona_idPersona AS Nro, PS.usuario AS Credencial, 
-                  PS.contrasenia AS 'Clave Segura', PS.rol AS 'Nivel Acceso'
-                  FROM personalsalud PS
-                  WHERE PS.usuario = ? AND PS.contrasenia = ?`; // CONSULTA SQL
+  db.query(query, [nombreUsuario, contrasenia], (error, result) => {
 
-  db.query(query, [nombreUsuario, contrasenia], (error, result) => {    // EJECUCION
     if (error) {
+
       return res.status(500).json({ error: "Error en el servidor" });
+
     }
 
     if (result.length === 0) {
+
       return res.status(401).json({ error: "Credenciales incorrectas" });
+
     }
 
     res.json({
-      // ENVIO DE DATOS
       Nro: result[0].Nro,
       usuario: result[0].Credencial,
       rol: result[0]["Nivel Acceso"],
+      establecimiento: {
+        id: result[0].EstablecimientoId,
+        nombre: result[0].EstablecimientoNombre,
+      },
     });
   });
 });
@@ -873,8 +1000,6 @@ const verifyRole = (role) => {
 app.get("/api/admin-data", verifyRole("administrador"), (req, res) => {
   res.json({ message: "Datos confidenciales del administrador" });
 });
-
-
 
 // OBTENER LOS DATOS  RELACIONADOS AL USUARIO
 app.get("/api/data-user/:idPersona", (req, res) => {
@@ -911,3 +1036,151 @@ app.get("/api/data-user/:idPersona", (req, res) => {
   });
 });
 
+// -------------------administradores-----------------
+// para hacer crud de administradores
+// Ruta para obtener los administradores
+app.get("/api/administradores", (req, res) => {
+  const query = `
+    SELECT 
+      p.idPersona, 
+      p.nombres, 
+      p.primerApellido, 
+      p.segundoApellido, 
+      p.numeroCelular, 
+      ps.rol, 
+      p.CI,
+      e.idEstablecimientoSalud, 
+      e.nombreEstablecimiento
+    FROM persona p
+    INNER JOIN personalsalud ps ON p.idPersona = ps.persona_idPersona
+    INNER JOIN establecimientosalud e ON p.EstablecimientoSalud_idEstablecimientoSalud = e.idEstablecimientoSalud
+    WHERE ps.rol = 'Administrador'
+  `;
+
+  db.query(query, (err, result) => {
+    if (err) {
+      console.error("Error al obtener los administradores:", err);
+      return res.status(500).json({ error: "Error en el servidor" });
+    }
+    res.json(result);
+  });
+});
+
+//para actualizar admin
+app.put("/api/administradores/:id", (req, res) => {
+  const { id } = req.params;
+  const { nombres, primerApellido, segundoApellido, numeroCelular, CI, EstablecimientoSalud_idEstablecimientoSalud } = req.body;
+
+  const queryPersona = `
+    UPDATE persona 
+    SET nombres = ?, primerApellido = ?, segundoApellido = ?, numeroCelular = ?, CI = ?
+    WHERE idPersona = ?
+  `;
+
+  db.query(queryPersona, [nombres, primerApellido, segundoApellido, numeroCelular, CI, EstablecimientoSalud_idEstablecimientoSalud, id], (err, result) => {
+    if (err) {
+      console.error('Error al actualizar el administrador:', err);
+      return res.status(500).json({ error: 'Error en el servidor' });
+    }
+
+    res.status(200).json({ message: 'Administrador actualizado correctamente' });
+  });
+});
+
+//para eliminar admin
+app.delete("/api/administradores/:id", (req, res) => {
+  const { id } = req.params;
+
+  const query = `
+    UPDATE persona 
+    SET estado = 0 
+    WHERE idPersona = ?
+  `;
+
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error('Error al eliminar el administrador:', err);
+      return res.status(500).json({ error: 'Error en el servidor' });
+    }
+
+    res.status(200).json({ message: 'Administrador eliminado correctamente' });
+  });
+});
+
+//insertar admin
+/* API: Registrar Administrador */
+
+app.post("/api/administradores", (req, res) => {
+  const { nombres, primerApellido, segundoApellido, numeroCelular, CI, EstablecimientoSalud_idEstablecimientoSalud } = req.body;
+  
+  // Verificar que todos los campos requeridos estén presentes
+  if (!nombres || !primerApellido || !numeroCelular || !CI || !EstablecimientoSalud_idEstablecimientoSalud) {
+    return res.status(400).json({ error: 'Faltan campos requeridos' });
+  }
+
+  // Consulta SQL para insertar el nuevo administrador en la base de datos
+  const queryPersona = `
+    INSERT INTO persona (nombres, primerApellido, segundoApellido, numeroCelular, CI, EstablecimientoSalud_idEstablecimientoSalud) 
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(queryPersona, [nombres, primerApellido, segundoApellido, numeroCelular, CI, EstablecimientoSalud_idEstablecimientoSalud], (err, result) => {
+    if (err) {
+      console.error('Error al registrar el administrador:', err);
+      return res.status(500).json({ error: 'Error en el servidor' });
+    }
+
+    const personaId = result.insertId;
+    const usuario = `${nombres.slice(0, 3).toLowerCase()}${primerApellido.slice(0, 3).toLowerCase()}`;
+    const contrasenia = CI;  // Considera encriptar la contraseña
+
+    // Insertar el rol "Administrador" para la persona recién creada
+    const queryPersonalSalud = `
+      INSERT INTO personalsalud (persona_idPersona, usuario, contrasenia, rol)
+      VALUES (?, ?, ?, 'Administrador');
+    `;
+
+    db.query(queryPersonalSalud, [personaId, usuario, contrasenia], (err, result) => {
+      if (err) {
+        console.error('Error al asignar el rol:', err);
+        return res.status(500).json({ error: 'Error al asignar el rol' });
+      }
+
+      res.status(201).json({ message: 'Administrador registrado correctamente' });
+    });
+  });
+});
+
+//para
+app.get("/api/administradores/:id", (req, res) => {
+  const { id } = req.params;
+  const query = `
+    SELECT 
+      p.idPersona, 
+      p.nombres, 
+      p.primerApellido, 
+      p.segundoApellido, 
+      p.numeroCelular, 
+      ps.rol, 
+      p.CI,
+      e.idEstablecimientoSalud, 
+      e.nombreEstablecimiento
+    FROM persona p
+    INNER JOIN personalsalud ps ON p.idPersona = ps.persona_idPersona
+    INNER JOIN establecimientosalud e ON p.EstablecimientoSalud_idEstablecimientoSalud = e.idEstablecimientoSalud
+    WHERE ps.rol = 'Administrador' AND p.idPersona = ?
+  `;
+
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error("Error al obtener el administrador:", err);
+      return res.status(500).json({ error: "Error en el servidor" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Administrador no encontrado' });
+    }
+
+    res.json(result[0]);  // Devuelve solo el primer administrador
+  });
+});

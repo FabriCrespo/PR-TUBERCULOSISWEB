@@ -1,17 +1,49 @@
 /* src/components/Header.js */
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React  from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Cookies from 'js-cookie';
 import '../App.css';
 
 const Header = () => {
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const navigate = useNavigate();
 
   const userRole = Cookies.get('rol');  // "SuperAdministrador", "Administrador", "Doctor"
 
 
+  const routesByRole = {
+    superadmin: [
+     
+      { path: "/lista-personal-salud", label: "Personal Salud" },
+      { path: "/lista-establecimientos", label: "Establecimientos" },
+      { path: "/seguimiento-tratamientos", label: "Seguimiento Tratamientos" },
+      { path: "/lista-pacientes", label: "Pacientes" },
+      { path: "/transferencia", label: "Transferencia" },
+      { path: "/lista-admins", label: "Administradores" },
+    ],
+    administrador: [
+      { path: "/lista-personal-salud", label: "Personal Salud" },
+      // { path: "/lista-establecimientos", label: "Establecimientos" },
+      { path: "/seguimiento-tratamientos", label: "Seguimiento Tratamientos" },
+      { path: "/lista-pacientes", label: "Pacientes" },
+      { path: "/transferencia", label: "Transferencia" },
+    ],
+    medico: [
+      { path: "/seguimiento-tratamientos", label: "Seguimiento Tratamientos" },
+      { path: "/lista-pacientes", label: "Pacientes" },
+      { path: "/transferencia", label: "Transferencia" },
+    ],
+    "enfermero/a": [
+      { path: "/lista-pacientes", label: "Pacientes" },
+      { path: "/transferencia", label: "Transferencia" },
+    ],
+  };
+
+
   // REDERIZADO DE RUTAS SEGUN EL ROL
-  const renderLinks = () => {
+  /*const renderLinks = () => {
     if (userRole === 'superadministrador') {
       return (
         <>
@@ -61,7 +93,7 @@ const Header = () => {
           </li>
         </>
       );
-    } else if (userRole === 'doctor') {
+    } else if (userRole === 'medico') {
       return (
         <>
           <li className="nav-item">
@@ -95,12 +127,46 @@ const Header = () => {
     } else {
       return (
         <li className="nav-item">
-          {/* <Link className="nav-link logout" to="/">Cerrar Sesión</Link> */}
+          {/* <Link className="nav-link logout" to="/">Cerrar Sesión</Link> *}
         </li>
       );
     }
+  };*/
+  const renderLinks = () => {
+    const routes = routesByRole[userRole?.toLowerCase()] || [];
+    return (
+      <>
+        {routes.map((route, index) => (
+          <li key={index} className="nav-item">
+            <Link className="nav-link" to={route.path}>
+              {route.label}
+            </Link>
+          </li>
+        ))}
+        <li className="nav-item">
+          <button className="nav-link logout btn-link" onClick={handleLogout}>
+            Cerrar Sesión
+          </button>
+        </li>
+      </>
+    );
   };
 
+
+  // Función para manejar el cierre de sesión
+  const handleLogout = () => {
+    // Eliminar las cookies
+    Cookies.remove('persona_idPersona');
+    Cookies.remove('username');
+    Cookies.remove('rol');
+    Cookies.remove('establecimientoId');
+    Cookies.remove('establecimientoNombre');
+
+    setIsLoggedIn(false);
+
+    // Redirigir al usuario a la página de inicio
+    navigate('/');
+  };
 
 
   return (

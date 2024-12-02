@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie"; // Cookies
 import Layout from "../components/Layout";
+import { useAuth } from "../context/AuthContext";
 import './Login.css';
 
 const Login = () => {
@@ -11,6 +12,7 @@ const Login = () => {
   const [contrasenia, setContrasenia] = useState(''); // Contraseña
   const [passwordError, setPasswordError] = useState(""); // Error de contraseña
   const [error, setError] = useState(""); // Mensajes de error
+  const { setIsLoggedIn } = useAuth();
   const navigate = useNavigate();
   const INACTIVITY_TIME = 10 * 60 * 1000;
   //const INACTIVITY_TIME = 10;
@@ -37,8 +39,8 @@ const Login = () => {
   };
 
   const validatePassword = (password) => {
-    const minLength = 7;
-    if (password.length < minLength) {
+    const minLength = 6;
+    if (password.length <= minLength) {
       return "La contraseña debe tener al menos 7 caracteres.";
     } else if (!/^\d+$/.test(password)) {
       return "La contraseña debe contener solo números.";
@@ -70,42 +72,23 @@ const Login = () => {
         localStorage.setItem('userRole', userRole);
 
         // COOKIES
-        Cookies.set('persona_idPersona', data.persona_idPersona, { expires: 1 }); // Expira en 1 día
+        Cookies.set('persona_idPersona', data.Nro, { expires: 1 });
         Cookies.set('username', c_nombreUsuario, { expires: 1 });
-        //Cookies.set('password', c_contrasenia, { expires: 1 });
         Cookies.set('rol', userRole, { expires: 1 });
+        Cookies.set('establecimientoId', data.establecimiento.id, { expires: 1 });
+        Cookies.set('establecimientoNombre', data.establecimiento.nombre, { expires: 1 });
 
 
-
-        // Recuperar idPersona desde las cookies
-        const idPerson = Cookies.get('persona_idPersona');
-  /*if (!idPerson) {
-    return res.status(400).json({ error: "idPersona no encontrado en las cookies" });
-  }*/
         
-        /*// Llamada a la API para obtener más datos del usuario
-        const userDetailsResponse = await fetch(
-          `http://localhost:3001/api/data-user/${idPerson}`
-        );
-
-        if (!userDetailsResponse.ok) {
-          throw new Error("Error al obtener detalles del usuario");
-        }
-
-        const userDetails = await userDetailsResponse.json();
-
-        // Agregar más datos a las cookies
-        Cookies.set("idEstablecimientoSalud", userDetails.idEstablecimientoSalud, { expires: 1 }); // ID del establecimiento
-        Cookies.set("nombreEstablecimiento", userDetails.nombreEstablecimiento, { expires: 1 }); // Nombre del establecimiento*/
-
-
+        setIsLoggedIn(true);
         startInactivityTimer();
 
         // NAVEGACION SEGUN EL ROL
         const roleRoutes = {
           'administrador': '/home',
           'medico': '/home',
-          'enfermero/a': '/home'
+          'enfermero/a': '/home',
+          'superadmin': '/home',
         };
 
         navigate(roleRoutes[userRole] || '/');
@@ -141,6 +124,7 @@ const Login = () => {
     Cookies.remove('password');
     Cookies.remove('rol');
     alert('Por inactividad, se cerró tu sesión.');
+    setIsLoggedIn(false); // Actualizar estado global
     navigate('/'); // Redirigir al usuario al inicio de sesión
   };
   useEffect(() => {
@@ -208,3 +192,4 @@ const Login = () => {
 };
 
 export default Login;
+

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Cookies from "js-cookie"; // Cookies
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 
 function AñadirPaciente() {
+  const idEstablecimientoSalud = Cookies.get('establecimientoId');
   const navigate = useNavigate();
 
   const [nuevoPaciente, setNuevoPaciente] = useState({
@@ -25,7 +27,8 @@ function AñadirPaciente() {
   useEffect(() => {
     const obtenerEstablecimientos = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/establecimientosa');
+           // Realizar la solicitud GET con el ID del establecimiento
+           const response = await axios.get(`http://localhost:3001/api/establecimientosa/${idEstablecimientoSalud}`);
         setEstablecimientos(response.data);
       } catch (error) {
         console.error('Error al obtener los establecimientos:', error);
