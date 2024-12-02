@@ -1,30 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import Layout from '../components/LayoutPersonalSalud';
-
+import Cookies from 'js-cookie';
+import Layout from '../components/Layout';
+ 
 function Paciente() {
   const [personas, setPersonas] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const navigate = useNavigate(); // Para redirigir a otras rutas
-
+ 
   useEffect(() => {
-    axios.get('http://localhost:3001/api/pacientes')
-      .then(response => setPersonas(response.data))
-      .catch(error => {
+    const establecimientoId = Cookies.get('establecimientoId');
+    const userRole = Cookies.get('rol');  // Obtener el rol del usuario
+ 
+    axios
+      .get('http://localhost:3001/api/pacientes', {
+        params: { establecimientoId , 
+          rol: userRole  // Incluir el rol en la petición
+         },
+      })
+      .then((response) => setPersonas(response.data))
+      .catch((error) => {
         console.error('Error al cargar los datos de pacientes:', error);
         alert('No se pudieron cargar los datos de pacientes. Intente de nuevo más tarde.');
       });
   }, []);
-
+ 
+ 
   const desactivarPaciente = (id) => {
     const confirmed = window.confirm('¿Estás seguro de que deseas eliminar este paciente?');
     if (confirmed) {
       axios.put(`http://localhost:3001/api/pacientesDelete/${id}/estado`)
         .then(() => {
-          setPersonas(personas.map(persona => 
+          /*setPersonas(personas.map(persona =>
             persona.idPersona === id ? { ...persona, estado: 0 } : persona
-          ));
+          ));*/
+          setPersonas(personas.filter(persona => persona.idPersona !== id));
           alert('Paciente desactivado correctamente');
         })
         .catch(error => {
@@ -33,23 +44,23 @@ function Paciente() {
         });
     }
   };
-
+ 
   // Función para manejar la actualización de un paciente
   const handleActualizarPaciente = (id) => {
     navigate(`/actualizar-paciente/${id}`);
   };
-
+ 
   // Filtrar pacientes según el nombre
   const pacientesFiltrados = personas.filter(persona =>
     persona.nombreCompleto.toLowerCase().includes(busqueda.toLowerCase())
   );
-
+ 
   // Función para formatear la fecha de nacimiento
   const formatearFecha = (fecha) => {
     const date = new Date(fecha);
     return date.toLocaleDateString('es-ES'); // Formato DD/MM/AAAA
   };
-
+ 
   return (
     <Layout>
       <div className="container mt-4">
@@ -59,7 +70,12 @@ function Paciente() {
             <i className="bi bi-plus-lg me-1"></i>Añadir Paciente
           </Link>
         </div>
-
+        <div className="d-flex justify-content-center mt-4">
+          <Link to="/recuperar-pacientes" className="btn btn-secondary">
+            <i className="bi bi-arrow-return-left me-1"></i>Recuperar Pacientes
+          </Link>
+        </div>
+ 
         {/* Campo de búsqueda alineado a la izquierda */}
         <div className="mb-3" style={{ maxWidth: '300px' }}>
           <input
@@ -70,7 +86,7 @@ function Paciente() {
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
-
+ 
         <table className="table table-bordered table-hover">
           <thead className="table-light">
             <tr>
@@ -116,11 +132,13 @@ function Paciente() {
             ))}
           </tbody>
         </table>
-
-      
+ 
+ 
       </div>
     </Layout>
   );
 }
-
+ 
 export default Paciente;
+ 
+ 
