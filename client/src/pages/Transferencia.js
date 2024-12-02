@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import './Transferencia.css';
-import Layout from "../components/LayoutPersonalSalud";
+import Layout from "../components/Layout";
 
 
 const Transferencia = () => {
