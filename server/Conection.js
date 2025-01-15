@@ -20,8 +20,8 @@ app.use(express.urlencoded({ extended: true })); // Para datos URL-encoded
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "YOUNGE8H2S1re", // 11352871
-  database: "tuberculosistransferencia",
+  password: "123456", // 11352871
+  database: "tuberculosisproyectlleno",
 });
 
 // Configura dónde se guardarán los archivos

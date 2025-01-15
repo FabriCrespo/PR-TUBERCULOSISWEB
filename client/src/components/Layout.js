@@ -5,12 +5,12 @@ import './Layout.css';
 
 const Layout = ({ children }) => {
   return (
-    <div className="flex flex-col min-h-screen layout">
-      <Header className='layout-header'/>
+    <div className="layout-container">
+      <Header />
       <main className="layout-main">
         {children}
       </main>
-      <Footer className='layout-footer'/>
+      <Footer />
     </div>
   );
 };

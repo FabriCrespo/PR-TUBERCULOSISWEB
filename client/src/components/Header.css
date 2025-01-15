@@ -1,75 +1,58 @@
-/* src/components/Header.css */
+/* src/App.css */
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+/* Fondo blanco, borde redondeado y sombra */
+.header {
+  background-color: white;
+  border-radius: 12px;
+  margin: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.nav {
-  position: fixed;
-  /*background-color: #222;*/
-  background-color: #173D66;
-  top: 0;
-  left: 0;
-  right: 0;
-  transition: all 0.3s ease-in-out;
+/* Estilo de la barra de navegación */
+.navbar {
+  padding: 0.5rem 2rem;
 }
 
-.nav .container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 0;
-  transition: all 0.3s ease-in-out;
-}
-
-.nav ul {
-  display: flex;
-  list-style-type: none;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav a {
-  color: #fff;
-  text-decoration: none;
-  padding: 7px 15px;
-  transition: all 0.3s ease-in-out;
-}
-
-.nav.active {
-  background-color: #fff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-.nav.active a {
-  color: #000;
-}
-
-.nav.active .container {
-  padding: 10px 0;
-}
-
-.nav a.current,
-.nav a:hover {
-  /*color: #c0392b;*/
-  color: #8C9FC4;
+.navbar-brand {
+  font-size: 1.5rem;
   font-weight: bold;
+  color: #007bff !important; /* Azul claro */
 }
 
+.navbar-nav .nav-item {
+  margin: 0 15px;
+}
 
+.nav-link {
+  color: #007bff !important; /* Azul claro */
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 8px 15px;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+  background-color: #f0f8ff; /* Azul suave de hover */
+  color: #0056b3; /* Azul oscuro */
+}
+
+/* Botón de cerrar sesión */
 .logout {
-  background-color: red;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 5px;
-  text-align: center;
+  color: #dc3545; /* Rojo */
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
   text-decoration: none;
-  font-weight: bold;
+  cursor: pointer;
 }
 
 .logout:hover {
-  background-color: darkred;
-  color: white;
-  text-decoration: none;
+  text-decoration: underline;
+}
+
+/* Estilo de la barra de navegación móvil */
+.navbar-toggler {
+  border-color: #007bff;
 }

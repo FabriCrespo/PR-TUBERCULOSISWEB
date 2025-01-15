@@ -111,7 +111,6 @@ const Login = () => {
     }
   };
 
-  // TEMPORIZADOR DE INACTIVIDAD
   const startInactivityTimer = () => {
     clearTimeout(inactivityTimeout);
     inactivityTimeout = setTimeout(() => {
@@ -124,8 +123,8 @@ const Login = () => {
     Cookies.remove('password');
     Cookies.remove('rol');
     alert('Por inactividad, se cerró tu sesión.');
-    setIsLoggedIn(false); // Actualizar estado global
-    navigate('/'); // Redirigir al usuario al inicio de sesión
+    setIsLoggedIn(false); 
+    navigate('/'); 
   };
   useEffect(() => {
     const resetTimer = () => startInactivityTimer();
